@@ -1,6 +1,7 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/danimart1991/pvpc-hourly-pricing-card)
 ![GitHub last commit](https://img.shields.io/github/last-commit/danimart1991/pvpc-hourly-pricing-card)
 ![License](https://img.shields.io/github/license/danimart1991/pvpc-hourly-pricing-card.svg)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 
 # PVPC Hourly Pricing Card
 

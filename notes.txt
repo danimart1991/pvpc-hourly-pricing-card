@@ -1,0 +1,7 @@
+- Meter post en repo docs mi config
+- Meter en HACS
+- Meter etiquetitas de build, gitstatus... en repo
+
+You could use [HACS](https://hacs.xyz/) or follow this [guide](). Then include this code in your resources list with the correct path.
+
+- Meter Themes por git repo

@@ -42,7 +42,7 @@ class PVPCHourlyPricingCard extends Polymer.Element {
             <template is="dom-if" if="[[getTariffStatusIcon(pvpcHourlyPricingObj.attributes.tariff)]]">
               <ha-icon icon="[[getTariffStatusIcon(pvpcHourlyPricingObj.attributes.tariff)]]"></ha-icon>
             </template>
-            <div on-click="_pvpcHourlyPricingAttr">[[pvpcHourlyPricingObj.state]]<sup>[[pvpcHourlyPricingObj.attributes.unit_of_measurement]]</sup></div>
+            <div on-click="_pvpcHourlyPricingAttr">[[getFixedFloat(pvpcHourlyPricingObj.state)]]<sup>[[pvpcHourlyPricingObj.attributes.unit_of_measurement]]</sup></div>
           </div>
           <ha-chart-base data="[[ChartData]]"></ha-chart-base>
           <template is="dom-repeat" items="[[data]]"></template>
@@ -92,6 +92,10 @@ class PVPCHourlyPricingCard extends Polymer.Element {
 
   getCardSize() {
     return 4;
+  }
+  
+  getFixedFloat(number){
+      return parseFloat(number).toFixed(5);
   }
 
   getTariffStatusIcon(tariff) {
@@ -343,7 +347,7 @@ class PVPCHourlyPricingCard extends Polymer.Element {
               }
 
               var labelTitle = data.datasets[tooltipItems.datasetIndex].label || '';
-              var label = labelTitle + ': ' + tooltipItems.value + ' ' + energyUnit + ' ';
+              var label = labelTitle + ': ' + parseFloat(tooltipItems.value).toFixed(5) + ' ' + energyUnit + ' ';
 
               return icon ? label + icon : label;
             },

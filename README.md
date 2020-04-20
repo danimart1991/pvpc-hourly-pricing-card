@@ -42,9 +42,26 @@ resources:
 
 ## Example
 
+### Mode Storage (Visual)
+
+From your Lovelace Dashboard: *Configure UI ➡ Add New Card ➡ Manual Card* and then this code:
+
 ```yaml
+type: custom:pvpc-hourly-pricing-card
+title: "PVPC 2.0 DHA"
+entity_id: sensor.pvpc_2_0_dha
+```
+
+### Mode YAML
+
+Add this lines of code to your Lovelace Dashboard YAML file:
+
+```yaml
+...
 cards:
+  ...
   - type: custom:pvpc-hourly-pricing-card
     title: "PVPC 2.0 DHA"
     entity_id: sensor.pvpc_2_0_dha
+  ...
 ```

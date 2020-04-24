@@ -1,6 +1,4 @@
 {
     "name": "PVPC Hourly Pricing Card",
-    "content_in_root": true,
-    "filename": "pvpc-hourly-pricing-card.js",
     "render_readme": true
 }

@@ -2,6 +2,81 @@ const LitElement = Object.getPrototypeOf(customElements.get('hui-view'));
 const html = LitElement.prototype.html;
 const css = LitElement.prototype.css;
 
+const locale = {
+  da: {
+    minPrice: 'Minimumspris i dag:',
+    maxPrice: 'Maksimal pris i dag:',
+    minPriceNextDay: 'Minimumspris i morgen:',
+    maxPriceNextDay: 'Maksimal pris i morgen:',
+    infoNoNextDay: 'Morgendagens data er endnu ikke tilgængelige',
+    from: 'fra',
+    to: 'til',
+  },
+  de: {
+    minPrice: 'Mindestpreis heute:',
+    maxPrice: 'Maximaler preis heute:',
+    minPriceNextDay: 'Mindestpreis morgen:',
+    maxPriceNextDay: 'Maximaler preis morgen:',
+    infoNoNextDay: 'Die Daten von morgen sind noch nicht verfügbar',
+    from: 'von',
+    to: 'bis',
+  },
+  en: {
+    minPrice: 'Lowest price today:',
+    maxPrice: 'Highest price today:',
+    minPriceNextDay: 'Lowest price tomorrow:',
+    maxPriceNextDay: 'Highest price tomorrow:',
+    infoNoNextDay: "Tomorrow's data is not yet available",
+    from: 'from',
+    to: 'to',
+  },
+  es: {
+    minPrice: 'Precio mínimo hoy:',
+    maxPrice: 'Precio máximo hoy:',
+    minPriceNextDay: 'Precio mínimo mañana:',
+    maxPriceNextDay: 'Precio máximo mañana:',
+    infoNoNextDay: 'Los datos de mañana no están disponibles aún',
+    from: 'de',
+    to: 'a',
+  },
+  fr: {
+    minPrice: "Prix minimum aujourd'hui:",
+    maxPrice: "Prix maximum aujourd'hui:",
+    minPriceNextDay: 'Prix minimum demain:',
+    maxPriceNextDay: 'Prix maximum demain:',
+    infoNoNextDay: 'Les données de demain ne sont pas encore disponibles',
+    from: 'de',
+    to: 'à',
+  },
+  nl: {
+    minPrice: 'Minimumspris i dag:',
+    maxPrice: 'Maksimal pris i dag:',
+    minPriceNextDay: 'Minimum prijs morgen:',
+    maxPriceNextDay: 'Maximale prijs morgen:',
+    infoNoNextDay: 'De gegevens van morgen zijn nog niet beschikbaar',
+    from: 'fra',
+    to: 'til',
+  },
+  ru: {
+    minPrice: 'Минимальная цена сегодня:',
+    maxPrice: 'Максимальная цена сегодня:',
+    minPriceNextDay: 'Минимальная цена завтра:',
+    maxPriceNextDay: 'Максимальная цена завтра:',
+    infoNoNextDay: 'Данные завтра еще не доступны',
+    from: 'С',
+    to: 'до',
+  },
+  sv: {
+    minPrice: 'Lägsta pris idag:',
+    maxPrice: 'Maxpris idag:',
+    minPriceNextDay: 'Lägsta pris imorgon:',
+    maxPriceNextDay: 'Maxpris i morgon:',
+    infoNoNextDay: 'Morgondagens data är ännu inte tillgängliga',
+    from: '',
+    to: 'till',
+  },
+};
+
 const tariffPeriodIcons = {
   peak: 'mdi:weather-sunny',
   valley: 'mdi:weather-night',
@@ -56,8 +131,7 @@ class PVPCHourlyPricingCard extends LitElement {
   setPVPCHourlyPricingObj() {
     if (!this.hass) return;
 
-    this.pvpcHourlyPricingObj =
-      this._config.entity in this.hass.states ? this.hass.states[this._config.entity] : null;
+    this.pvpcHourlyPricingObj = this._config.entity in this.hass.states ? this.hass.states[this._config.entity] : null;
     if (!this.pvpcHourlyPricingObj) return;
 
     this.despiction = this.getDespiction(this.pvpcHourlyPricingObj.attributes);
@@ -104,7 +178,10 @@ class PVPCHourlyPricingCard extends LitElement {
 
     return html`
       <ha-card header="${this._config.name ? this._config.name : ''}">
-        ${this.renderCurrent()} ${this.renderGraph()}
+        ${this._config.current !== false ? this.renderCurrent() : ''}
+        ${this._config.details !== false ? this.renderDetails() : ''}
+        ${this._config.graph !== false ? this.renderGraph() : ''}
+        ${this._config.info !== false ? this.renderInfo() : ''}
       </ha-card>
     `;
   }
@@ -122,6 +199,56 @@ class PVPCHourlyPricingCard extends LitElement {
     `;
   }
 
+  renderDetails() {
+    if (!this.despiction) {
+      return html``;
+    }
+
+    let minPrice = this.getFixedFloat(this.despiction.minPrice);
+    let minPriceFrom = this.getTimeString(new Date().setHours(this.despiction.minIndex, 0));
+    let minPriceTo = this.getTimeString(new Date().setHours(this.despiction.minIndex + 1, 0));
+    let maxPrice = this.getFixedFloat(this.despiction.maxPrice);
+    let maxPriceFrom = this.getTimeString(new Date().setHours(this.despiction.maxIndex, 0));
+    let maxPriceTo = this.getTimeString(new Date().setHours(this.despiction.maxIndex + 1, 0));
+    let minPriceNextDay = this.getFixedFloat(this.despiction.minPriceNextDay);
+    let minPriceFromNextDay = this.getTimeString(new Date().setHours(this.despiction.minIndex, 0));
+    let minPriceToNextDay = this.getTimeString(new Date().setHours(this.despiction.minIndex + 1, 0));
+    let maxPriceNextDay = this.getFixedFloat(this.despiction.maxPriceNextDay);
+    let maxPriceFromNextDay = this.getTimeString(new Date().setHours(this.despiction.maxIndex, 0));
+    let maxPriceToNextDay = this.getTimeString(new Date().setHours(this.despiction.maxIndex + 1, 0));
+
+    this.numberElements++;
+
+    return html`
+      <ul class="details tappable ${this.numberElements > 1 ? 'spacer' : ''}" @click="${this._handleClick}">
+        <li>
+          <ha-icon icon="mdi:thumb-up-outline"></ha-icon>
+          ${this.ll('minPrice')} ${minPrice}${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}
+          ${this.ll('from')} ${minPriceFrom} ${this.ll('to')} ${minPriceTo}
+        </li>
+        <li>
+          <ha-icon icon="mdi:thumb-down-outline"></ha-icon>
+          ${this.ll('maxPrice')} ${maxPrice}${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}
+          ${this.ll('from')} ${maxPriceFrom} ${this.ll('to')} ${maxPriceTo}
+        </li>
+        ${this.despiction.minPriceNextDay
+          ? html` <li>
+                <ha-icon icon="mdi:thumb-up-outline"></ha-icon>
+                ${this.ll('minPriceNextDay')}
+                ${minPriceNextDay}${this.pvpcHourlyPricingObj.attributes.unit_of_measurement} ${this.ll('from')}
+                ${minPriceFromNextDay} ${this.ll('to')} ${minPriceToNextDay}
+              </li>
+              <li>
+                <ha-icon icon="mdi:thumb-down-outline"></ha-icon>
+                ${this.ll('maxPriceNextDay')}
+                ${maxPriceNextDay}${this.pvpcHourlyPricingObj.attributes.unit_of_measurement} ${this.ll('from')}
+                ${maxPriceFromNextDay} ${this.ll('to')} ${maxPriceToNextDay}
+              </li>`
+          : ''}
+      </ul>
+    `;
+  }
+
   renderGraph() {
     if (!this.despiction) {
       return html``;
@@ -136,6 +263,24 @@ class PVPCHourlyPricingCard extends LitElement {
         <ha-chart-base id="Chart"></ha-chart-base>
       </div>
     `;
+  }
+
+  renderInfo() {
+    if (!this.despiction) {
+      return html``;
+    }
+
+    this.numberElements++;
+
+    if (!this.despiction.minPriceNextDay) {
+      return html`
+        <div class="info clear ${this.numberElements > 1 ? 'spacer' : ''}">
+          ${this.ll('infoNoNextDay')}
+        </div>
+      `;
+    } else {
+      return html``;
+    }
   }
 
   drawChart() {
@@ -164,17 +309,6 @@ class PVPCHourlyPricingCard extends LitElement {
             label: that.getDateString(today),
             type: 'line',
             data: this.despiction.prices,
-            yAxisID: 'PriceAxis',
-            borderWidth: 2.0,
-            lineTension: 0.0,
-            pointRadius: 0.0,
-            pointHitRadius: 5.0,
-            fill: false,
-          },
-          {
-            label: that.getDateString(today.setDate(today.getDate() + 1)),
-            type: 'line',
-            data: this.despiction.pricesNextDay,
             yAxisID: 'PriceAxis',
             borderWidth: 2.0,
             lineTension: 0.0,
@@ -319,6 +453,20 @@ class PVPCHourlyPricingCard extends LitElement {
         },
       },
     };
+
+    if (hasNextDayData) {
+      chartOptions.data.datasets.push({
+        label: that.getDateString(today.setDate(today.getDate() + 1)),
+        type: 'line',
+        data: this.despiction.pricesNextDay,
+        yAxisID: 'PriceAxis',
+        borderWidth: 2.0,
+        lineTension: 0.0,
+        pointRadius: 0.0,
+        pointHitRadius: 5.0,
+        fill: false,
+      });
+    }
 
     this.ChartData = chartOptions;
   }
@@ -471,7 +619,38 @@ class PVPCHourlyPricingCard extends LitElement {
         position: absolute;
         margin-right: 8px;
       }
+
+      .details {
+        font-weight: 300;
+        color: var(--primary-text-color);
+        list-style: none;
+        padding-right: 1em;
+        padding-left: 1em;
+      }
+
+      .details li {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      .details ha-icon {
+        height: 22px;
+        margin-right: 4px;
+      }
+
+      .info {
+        color: var(--primary-text-color);
+        text-align: center;
+        padding-right: 1em;
+        padding-left: 1em;
+      }
     `;
+  }
+
+  ll(str) {
+    if (locale[this.lang] === undefined) return locale.en[str];
+    return locale[this.lang][str];
   }
 }
 

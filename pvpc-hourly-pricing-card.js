@@ -28,7 +28,7 @@ function hasConfigOrEntityChanged(element, changedProps) {
 
   const oldHass = changedProps.get('hass');
   if (oldHass) {
-    return oldHass.states[element._config.entity_id] !== element.hass.states[element._config.entity_id];
+    return oldHass.states[element._config.entity] !== element.hass.states[element._config.entity];
   }
 
   return true;
@@ -44,7 +44,7 @@ class PVPCHourlyPricingCard extends LitElement {
   }
 
   setConfig(config) {
-    if (!config.entity_id) {
+    if (!config.entity) {
       throw new Error('Please define a "Spain electricity hourly pricing (PVPC)" entity');
     }
 
@@ -57,7 +57,7 @@ class PVPCHourlyPricingCard extends LitElement {
     if (!this.hass) return;
 
     this.pvpcHourlyPricingObj =
-      this._config.entity_id in this.hass.states ? this.hass.states[this._config.entity_id] : null;
+      this._config.entity in this.hass.states ? this.hass.states[this._config.entity] : null;
     if (!this.pvpcHourlyPricingObj) return;
 
     this.despiction = this.getDespiction(this.pvpcHourlyPricingObj.attributes);
@@ -96,14 +96,14 @@ class PVPCHourlyPricingCard extends LitElement {
         </style>
         <ha-card>
           <div class="not-found">
-            Entity not available: ${this._config.entity_id}
+            Entity not available: ${this._config.entity}
           </div>
         </ha-card>
       `;
     }
 
     return html`
-      <ha-card header="${this._config.title ? this._config.title : ''}">
+      <ha-card header="${this._config.name ? this._config.name : ''}">
         ${this.renderCurrent()} ${this.renderGraph()}
       </ha-card>
     `;
@@ -406,7 +406,7 @@ class PVPCHourlyPricingCard extends LitElement {
   }
 
   _handleClick() {
-    fireEvent(this, 'hass-more-info', { entityId: this._config.entity_id });
+    fireEvent(this, 'hass-more-info', { entityId: this._config.entity });
   }
 
   getCardSize() {

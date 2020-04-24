@@ -1,191 +1,169 @@
-class PVPCHourlyPricingCard extends Polymer.Element {
-  static get template() {
-    return Polymer.html`
-      <style>
-        ha-card {
-          padding: 12px 0 0 0;
-        }
-        ha-icon {
-          color: var(--paper-item-icon-color);
-        }
-        .card {
-          padding: 0 18px 18px 18px;
-        }
-        .main {
-          display: flex;
-          justify-content: flex-start;
-          align-items: center;
-          margin-top: -10px;
-          margin-right: 32px;
-        }
-        .main ha-icon {
-          --iron-icon-height:  72px;
-          --iron-icon-width:  72px;
-          margin-right: 8px;
-        }
-        .main div {
-          cursor: pointer;
-          font-size: 52px;
-          line-height: 1em;
-          position: relative;
-        }
-        .main sup {
-          font-size: 24px;
-          line-height: 1em;
-          position: absolute;
-          top: 4px;
-        }
-      </style>
-      <ha-card header="[[title]]">
-        <div class="card">
-          <div class="main">
-            <template is="dom-if" if="[[getTariffStatusIcon(pvpcHourlyPricingObj.attributes.tariff)]]">
-              <ha-icon icon="[[getTariffStatusIcon(pvpcHourlyPricingObj.attributes.tariff)]]"></ha-icon>
-            </template>
-            <div on-click="_pvpcHourlyPricingAttr">[[getFixedFloat(pvpcHourlyPricingObj.state)]]<sup>[[pvpcHourlyPricingObj.attributes.unit_of_measurement]]</sup></div>
+const LitElement = Object.getPrototypeOf(customElements.get('hui-view'));
+const html = LitElement.prototype.html;
+const css = LitElement.prototype.css;
+
+const tariffPeriodIcons = {
+  peak: 'mdi:weather-sunny',
+  valley: 'mdi:weather-night',
+  'super-valley': 'mdi:car-electric',
+};
+
+const fireEvent = (node, type, detail, options) => {
+  options = options || {};
+  detail = detail === null || detail === undefined ? {} : detail;
+  const event = new Event(type, {
+    bubbles: options.bubbles === undefined ? true : options.bubbles,
+    cancelable: Boolean(options.cancelable),
+    composed: options.composed === undefined ? true : options.composed,
+  });
+  event.detail = detail;
+  node.dispatchEvent(event);
+  return event;
+};
+
+function hasConfigOrEntityChanged(element, changedProps) {
+  if (changedProps.has('_config')) {
+    return true;
+  }
+
+  const oldHass = changedProps.get('hass');
+  if (oldHass) {
+    return oldHass.states[element._config.entity_id] !== element.hass.states[element._config.entity_id];
+  }
+
+  return true;
+}
+
+class PVPCHourlyPricingCard extends LitElement {
+  static get properties() {
+    return { _config: {}, hass: {} };
+  }
+
+  static getStubConfig() {
+    return {};
+  }
+
+  setConfig(config) {
+    if (!config.entity_id) {
+      throw new Error('Please define a "Spain electricity hourly pricing (PVPC)" entity');
+    }
+
+    this._config = config;
+
+    this.setPVPCHourlyPricingObj();
+  }
+
+  setPVPCHourlyPricingObj() {
+    if (!this.hass) return;
+
+    this.pvpcHourlyPricingObj =
+      this._config.entity_id in this.hass.states ? this.hass.states[this._config.entity_id] : null;
+    if (!this.pvpcHourlyPricingObj) return;
+
+    this.despiction = this.getDespiction(this.pvpcHourlyPricingObj.attributes);
+  }
+
+  shouldUpdate(changedProps) {
+    return hasConfigOrEntityChanged(this, changedProps);
+  }
+
+  updated(param) {
+    this.setPVPCHourlyPricingObj();
+    let chart = this.shadowRoot.getElementById('Chart');
+    if (chart) chart.data = this.ChartData;
+  }
+
+  render() {
+    if (!this._config || !this.hass) {
+      return html``;
+    }
+
+    this.setPVPCHourlyPricingObj();
+    this.numberElements = 0;
+    this.lang =
+      this._config.language === undefined || this._config.language === 'hacs'
+        ? this.hass.selectedLanguage || this.hass.language
+        : this._config.language;
+
+    if (!this.pvpcHourlyPricingObj) {
+      return html`
+        <style>
+          .not-found {
+            flex: 1;
+            background-color: yellow;
+            padding: 8px;
+          }
+        </style>
+        <ha-card>
+          <div class="not-found">
+            Entity not available: ${this._config.entity_id}
           </div>
-          <ha-chart-base data="[[ChartData]]"></ha-chart-base>
-          <template is="dom-repeat" items="[[data]]"></template>
-        </div>
+        </ha-card>
+      `;
+    }
+
+    return html`
+      <ha-card header="${this._config.title ? this._config.title : ''}">
+        ${this.renderCurrent()} ${this.renderGraph()}
       </ha-card>
     `;
   }
 
-  static get properties() {
-    return {
-      config: Object,
-      pvpcHourlyPricingObj: {
-        type: Object,
-        observer: 'dataChanged',
-      },
-    };
+  renderCurrent() {
+    this.numberElements++;
+
+    return html`
+      <div class="current tappable ${this.numberElements > 1 ? 'spacer' : ''}" @click="${this._handleClick}">
+        <ha-icon class="period-icon" icon="${this.getTariffPeriodIcon(this.pvpcHourlyPricingObj.attributes.tariff)}">
+        </ha-icon>
+        <span class="currentPrice">${this.getFixedFloat(this.pvpcHourlyPricingObj.state)}</span>
+        <span class="currentPriceUnit"> ${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}</span>
+      </div>
+    `;
   }
 
-  constructor() {
-    super();
-    this.tariffIcons = {
-      peak: 'mdi:weather-sunny',
-      valley: 'mdi:weather-night',
-      'super-valley': 'mdi:car-electric',
-    };
-  }
-
-  setConfig(config) {
-    this.config = config;
-    this.title = config.title;
-    this.pvpcHourlyPricingObj = config.entity_id;
-    if (!config.entity_id) {
-      throw new Error('Please define a "Spain electricity hourly pricing (PVPC)" entity in the card config');
+  renderGraph() {
+    if (!this.despiction) {
+      return html``;
     }
-  }
 
-  set hass(hass) {
-    this._hass = hass;
-    this.lang = this._hass.selectedLanguage || this._hass.language;
-    this.pvpcHourlyPricingObj = this.config.entity_id in hass.states ? hass.states[this.config.entity_id] : null;
-    this.data = this.getData(this.pvpcHourlyPricingObj.attributes);
-  }
+    this.numberElements++;
 
-  dataChanged() {
     this.drawChart();
-  }
 
-  getCardSize() {
-    return 4;
-  }
-  
-  getFixedFloat(number){
-      return parseFloat(number).toFixed(5);
-  }
-
-  getTariffStatusIcon(tariff) {
-    var icon;
-
-    if (tariff == 'discrimination') {
-      var utcHours = new Date().getUTCHours();
-      if (utcHours >= 21 || utcHours < 11) {
-        icon = 'valley';
-      } else {
-        icon = 'peak';
-      }
-    } else if (tariff == 'electric_car') {
-      var hours = new Date().getHours();
-      if (hours >= 13 && hours < 23) {
-        icon = 'peak';
-      } else if (hours >= 1 && hours < 3) {
-        icon = 'valley';
-      } else {
-        icon = 'super-valley';
-      }
-    }
-
-    return this.tariffIcons[icon];
-  }
-
-  getData(attributes) {
-    var data = [];
-    var priceRegex = /price_\d\dh/;
-    var priceNextDayRegex = /price_next_day_\d\dh/;
-
-    const priceArray = Object.keys(attributes)
-      .filter((key) => priceRegex.test(key))
-      .map((key) => attributes[key]);
-    const priceNextDayArray = Object.keys(attributes)
-      .filter((key) => priceNextDayRegex.test(key))
-      .map((key) => attributes[key]);
-
-    for (let index = 0; index < 24; index++) {
-      data.push({
-        datetime: new Date().setHours(index, 0),
-        prices: priceArray[index],
-        pricesNextDay: priceNextDayArray[index],
-      });
-    }
-
-    return data;
+    return html`
+      <div class="clear ${this.numberElements > 1 ? 'spacer' : ''}">
+        <ha-chart-base id="Chart"></ha-chart-base>
+      </div>
+    `;
   }
 
   drawChart() {
-    var data = this.getData(this.pvpcHourlyPricingObj.attributes);
-    var locale = this._hass.selectedLanguage || this._hass.language;
-    var energyUnit = this.pvpcHourlyPricingObj.attributes.unit_of_measurement;
-    var i;
-    if (!data) {
-      return [];
-    }
-    var dateTime = [];
-    var prices = [];
-    var pricesNextDay = [];
-    for (i = 0; i < data.length; i++) {
-      var d = data[i];
-      dateTime.push(new Date(d.datetime));
-      prices.push(d.prices);
-      pricesNextDay.push(d.pricesNextDay);
-    }
-    var style = getComputedStyle(document.body);
-    var legendTextColor = style.getPropertyValue('--primary-text-color');
-    var axisTextColor = style.getPropertyValue('--secondary-text-color');
-    var dividerColor = style.getPropertyValue('--divider-color');
+    if (!this.despiction) return;
+
+    const that = this;
+
+    const style = getComputedStyle(document.body);
+    const legendTextColor = style.getPropertyValue('--primary-text-color');
+    const axisTextColor = style.getPropertyValue('--secondary-text-color');
+    const dividerColor = style.getPropertyValue('--divider-color');
     var today = new Date();
-    var minIndex = prices.indexOf(Math.min.apply(null, prices));
-    var maxIndex = prices.indexOf(Math.max.apply(null, prices));
-    var minNextDayIndex = pricesNextDay.indexOf(Math.min.apply(null, pricesNextDay));
-    var maxNextDayIndex = pricesNextDay.indexOf(Math.max.apply(null, pricesNextDay));
+    let minIndex = this.despiction.minIndex;
+    let maxIndex = this.despiction.maxIndex;
+    let minIndexNextDay = this.despiction.minIndexNextDay;
+    let maxIndexNextDay = this.despiction.maxIndexNextDay;
+    let hasNextDayData = this.despiction.pricesNextDay[0] !== undefined;
     const minText = '▼';
     const maxText = '▲';
     const chartOptions = {
       type: 'bar',
       data: {
-        labels: dateTime,
+        labels: this.despiction.dateTime,
         datasets: [
           {
-            label: today.toLocaleDateString(locale, {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            }),
+            label: that.getDateString(today),
             type: 'line',
-            data: prices,
+            data: this.despiction.prices,
             yAxisID: 'PriceAxis',
             borderWidth: 2.0,
             lineTension: 0.0,
@@ -194,13 +172,9 @@ class PVPCHourlyPricingCard extends Polymer.Element {
             fill: false,
           },
           {
-            label: new Date(today.setDate(today.getDate() + 1)).toLocaleDateString(locale, {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            }),
+            label: that.getDateString(today.setDate(today.getDate() + 1)),
             type: 'line',
-            data: pricesNextDay,
+            data: this.despiction.pricesNextDay,
             yAxisID: 'PriceAxis',
             borderWidth: 2.0,
             lineTension: 0.0,
@@ -225,28 +199,19 @@ class PVPCHourlyPricingCard extends Polymer.Element {
             ctx.textBaseline = 'middle';
 
             var meta = chartInstance.controller.getDatasetMeta(0);
-            var meta_next_day = chartInstance.controller.getDatasetMeta(1);
+            var minBar = meta.data[minIndex];
+            ctx.fillStyle = meta.dataset._model.borderColor;
+            ctx.fillText(minText, minBar._model.x, minBar._model.y + 2);
+            var maxBar = meta.data[maxIndex];
+            ctx.fillStyle = meta.dataset._model.borderColor;
+            ctx.fillText(maxText, maxBar._model.x, maxBar._model.y);
 
-            if (minIndex > -1) {
-              var minBar = meta.data[minIndex];
-              ctx.fillStyle = meta.dataset._model.borderColor;
-              ctx.fillText(minText, minBar._model.x, minBar._model.y + 2);
-            }
-
-            if (maxIndex > -1) {
-              var maxBar = meta.data[maxIndex];
-              ctx.fillStyle = meta.dataset._model.borderColor;
-              ctx.fillText(maxText, maxBar._model.x, maxBar._model.y);
-            }
-
-            if (minNextDayIndex > -1) {
-              var minNextDayBar = meta_next_day.data[minNextDayIndex];
+            if (hasNextDayData) {
+              var meta_next_day = chartInstance.controller.getDatasetMeta(1);
+              var minNextDayBar = meta_next_day.data[minIndexNextDay];
               ctx.fillStyle = meta_next_day.dataset._model.borderColor;
               ctx.fillText(minText, minNextDayBar._model.x, minNextDayBar._model.y + 2);
-            }
-
-            if (maxNextDayIndex > -1) {
-              var maxNextDayBar = meta_next_day.data[maxNextDayIndex];
+              var maxNextDayBar = meta_next_day.data[maxIndexNextDay];
               ctx.fillStyle = meta_next_day.dataset._model.borderColor;
               ctx.fillText(maxText, maxNextDayBar._model.x, maxNextDayBar._model.y);
             }
@@ -288,9 +253,8 @@ class PVPCHourlyPricingCard extends Polymer.Element {
                 autoSkip: true,
                 fontColor: axisTextColor,
                 maxRotation: 0,
-                callback: function (value) {
-                  var time = new Date(value).toLocaleTimeString(locale, { hour: '2-digit' });
-                  return time;
+                callback: function (value, index, values) {
+                  return that.getHourString.call(that, value);
                 },
               },
             },
@@ -318,14 +282,8 @@ class PVPCHourlyPricingCard extends Polymer.Element {
             title: function (items, data) {
               const item = items[0];
               const date = new Date(data.labels[item.index]);
-              const initDate = new Date(date).toLocaleTimeString(locale, {
-                hour: '2-digit',
-                minute: '2-digit',
-              });
-              const endDate = new Date(date.setHours(date.getHours() + 1)).toLocaleTimeString(locale, {
-                hour: '2-digit',
-                minute: '2-digit',
-              });
+              const initDate = that.getTimeString(date);
+              const endDate = that.getTimeString(date.setHours(date.getHours() + 1));
               return initDate + ' - ' + endDate;
             },
             label: function (tooltipItems, data) {
@@ -339,15 +297,21 @@ class PVPCHourlyPricingCard extends Polymer.Element {
                   icon = maxText;
                 }
               } else if (tooltipItems.datasetIndex === 1) {
-                if (index == minNextDayIndex) {
+                if (index == minIndexNextDay) {
                   icon = minText;
-                } else if (index == maxNextDayIndex) {
+                } else if (index == maxIndexNextDay) {
                   icon = maxText;
                 }
               }
 
               var labelTitle = data.datasets[tooltipItems.datasetIndex].label || '';
-              var label = labelTitle + ': ' + parseFloat(tooltipItems.value).toFixed(5) + ' ' + energyUnit + ' ';
+              var label =
+                labelTitle +
+                ': ' +
+                parseFloat(tooltipItems.value).toFixed(5) +
+                ' ' +
+                that.pvpcHourlyPricingObj.attributes.unit_of_measurement +
+                ' ';
 
               return icon ? label + icon : label;
             },
@@ -355,25 +319,159 @@ class PVPCHourlyPricingCard extends Polymer.Element {
         },
       },
     };
+
     this.ChartData = chartOptions;
   }
 
-  _fire(type, detail, options) {
-    const node = this.shadowRoot;
-    options = options || {};
-    detail = detail === null || detail === undefined ? {} : detail;
-    const e = new Event(type, {
-      bubbles: options.bubbles === undefined ? true : options.bubbles,
-      cancelable: Boolean(options.cancelable),
-      composed: options.composed === undefined ? true : options.composed,
-    });
-    e.detail = detail;
-    node.dispatchEvent(e);
-    return e;
+  getDespiction(attributes) {
+    var data = [];
+    var priceRegex = /price_\d\dh/;
+    var priceNextDayRegex = /price_next_day_\d\dh/;
+
+    const priceArray = Object.keys(attributes)
+      .filter((key) => priceRegex.test(key))
+      .map((key) => attributes[key]);
+    const priceNextDayArray = Object.keys(attributes)
+      .filter((key) => priceNextDayRegex.test(key))
+      .map((key) => attributes[key]);
+
+    let dateTime = [];
+    let prices = [];
+    let pricesNextDay = [];
+
+    for (let index = 0; index < 24; index++) {
+      dateTime.push(new Date().setHours(index, 0));
+      prices.push(priceArray[index]);
+      pricesNextDay.push(priceNextDayArray[index]);
+    }
+
+    data.dateTime = dateTime;
+    data.prices = prices;
+    data.pricesNextDay = pricesNextDay;
+
+    data.minPrice = Math.min.apply(null, prices);
+    data.maxPrice = Math.max.apply(null, prices);
+    data.minIndex = prices.indexOf(data.minPrice);
+    data.maxIndex = prices.indexOf(data.maxPrice);
+    data.minPriceNextDay = Math.min.apply(null, pricesNextDay);
+    data.maxPriceNextDay = Math.max.apply(null, pricesNextDay);
+    data.minIndexNextDay = pricesNextDay.indexOf(data.minPriceNextDay);
+    data.maxIndexNextDay = pricesNextDay.indexOf(data.maxPriceNextDay);
+
+    return data;
   }
 
-  _pvpcHourlyPricingAttr() {
-    this._fire('hass-more-info', { entityId: this.config.entity_id });
+  getTariffPeriodIcon(tariff) {
+    var icon;
+
+    if (tariff == 'discrimination') {
+      var utcHours = new Date().getUTCHours();
+      if (utcHours >= 21 || utcHours < 11) {
+        icon = 'valley';
+      } else {
+        icon = 'peak';
+      }
+    } else if (tariff == 'electric_car') {
+      var hours = new Date().getHours();
+      if (hours >= 13 && hours < 23) {
+        icon = 'peak';
+      } else if (hours >= 1 && hours < 3) {
+        icon = 'valley';
+      } else {
+        icon = 'super-valley';
+      }
+    }
+
+    return tariffPeriodIcons[icon];
+  }
+
+  getDateString(datetime) {
+    return new Date(datetime).toLocaleDateString(this.lang, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+  }
+
+  getHourString(datetime) {
+    return new Date(datetime).toLocaleTimeString(this.lang, { hour: '2-digit', hour12: false });
+  }
+
+  getTimeString(datetime) {
+    return new Date(datetime).toLocaleTimeString(this.lang, { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+
+  getFixedFloat(number) {
+    return parseFloat(number).toFixed(5);
+  }
+
+  _handleClick() {
+    fireEvent(this, 'hass-more-info', { entityId: this._config.entity_id });
+  }
+
+  getCardSize() {
+    return this.numberElements || 3;
+  }
+
+  static get styles() {
+    return css`
+      ha-card {
+        margin: auto;
+        padding-top: 1.3em;
+        padding-bottom: 1.3em;
+        padding-left: 1em;
+        padding-right: 1em;
+        position: relative;
+      }
+
+      ha-icon {
+        color: var(--paper-item-icon-color);
+      }
+
+      .spacer {
+        padding-top: 1em;
+      }
+
+      .clear {
+        clear: both;
+      }
+
+      .tappable {
+        cursor: pointer;
+      }
+
+      .current {
+        height: 6em;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .period-icon {
+        width: 6em;
+        height: 6em;
+      }
+
+      .currentPrice {
+        font-weight: 300;
+        font-size: 4em;
+        color: var(--primary-text-color);
+        margin-top: 0.5em;
+        margin-right: 8px;
+      }
+
+      .currentPriceUnit {
+        font-weight: 300;
+        font-size: 1.5em;
+        vertical-align: super;
+        color: var(--primary-text-color);
+        right: 0em;
+        top: 0em;
+        position: absolute;
+        margin-right: 8px;
+      }
+    `;
   }
 }
 

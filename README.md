@@ -11,7 +11,7 @@ Home Assistant Lovelace custom card to use with [Spain electricity hourly pricin
 
 > This card only works with a [previously configured Spain electricity hourly pricing (PVPC) integration](https://www.danielmartingonzalez.com/pvpc-tariff-prices-in-home-assistant/) in Home Assistant.
 
-Based on [Lovelace Weather Card with Chart](https://github.com/sgttrs/lovelace-weather-card-chart) by [Yevgeniy Prokopenko](https://github.com/sgttrs).
+Based on [Lovelace Weather Card with Chart](https://github.com/sgttrs/lovelace-weather-card-chart) by [Yevgeniy Prokopenko](https://github.com/sgttrs) and the fork [Lovelace Animated Weather Card](https://github.com/MarcHagen/weather-card) by [Marc Hagen](https://github.com/MarcHagen).
 
 ## Features
 
@@ -19,7 +19,7 @@ Based on [Lovelace Weather Card with Chart](https://github.com/sgttrs/lovelace-w
 - Actual price close-up.
 - Graph with the prices of the current day.
 - Graph with the prices of the next day when you are available.
-- Minimum and maximum of the current and next day.
+- Lowest and Highest of the current and next day.
 - Icon indicating the current pricing period.
 
 ## Installation
@@ -34,11 +34,17 @@ resources:
 
 ## Options
 
-| Name | Type | Default | Description |
-|---|---|---|---|
-| type | string | **Required** | `custom:pvpc-hourly-pricing-card` |
-| entity_id | string | **Required** | Spain electricity hourly pricing (PVPC) entity |
-| title | string | Optional | Title of the card |
+![Card Options](docs/images/card-options.jpg)
+
+| Name | Type | Default | Requirement | Description |
+| --- | --- | --- | --- | --- |
+| type | string | `null` | **Required** | `custom:pvpc-hourly-pricing-card` |
+| entity | string | `null` | **Required** | Spain electricity hourly pricing (PVPC) entity |
+| name | string | `null` | Optional | Title of the card |
+| current | boolean | `true` | Optional | Show the current price and pricing period |
+| details | boolean | `true` | Optional | Show the lowest and highest prices and hours for the current and next day |
+| graph | boolean | `true` | Optional | Show the graph with the prices for the current and next day |
+| info | boolean | `true` | Optional | Show info like 'Tomorrow's data is no yet available' |
 
 ## Example
 
@@ -48,8 +54,8 @@ From your Lovelace Dashboard: *Configure UI ➡ Add New Card ➡ Manual Card* an
 
 ```yaml
 type: custom:pvpc-hourly-pricing-card
-title: "PVPC 2.0 DHA"
-entity_id: sensor.pvpc_2_0_dha
+name: "PVPC 2.0 DHA"
+entity: sensor.pvpc_2_0_dha
 ```
 
 ### Mode YAML
@@ -61,7 +67,7 @@ Add this lines of code to your Lovelace Dashboard YAML file:
 cards:
   ...
   - type: custom:pvpc-hourly-pricing-card
-    title: "PVPC 2.0 DHA"
-    entity_id: sensor.pvpc_2_0_dha
+    name: "PVPC 2.0 DHA"
+    entity: sensor.pvpc_2_0_dha
   ...
 ```

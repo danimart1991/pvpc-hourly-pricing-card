@@ -78,6 +78,7 @@ const locale = {
 };
 
 const tariffPeriodIcons = {
+  error: 'mdi:alert-circle',
   peak: 'mdi:weather-sunny',
   valley: 'mdi:weather-night',
   'super-valley': 'mdi:car-electric'
@@ -114,8 +115,16 @@ class PVPCHourlyPricingCard extends LitElement {
     return { _config: {}, hass: {} };
   }
 
-  static getStubConfig() {
-    return {};
+  static async getConfigElement() {
+    await import('./pvpc-hourly-pricing-card-editor.js');
+    return document.createElement('pvpc-hourly-pricing-card-editor');
+  }
+
+  static getStubConfig(hass, entities, entitiesFallback) {
+    const entity = Object.keys(hass.states).find((eid) =>
+      Object.keys(hass.states[eid].attributes).some((aid) => aid == 'min_price_at')
+    );
+    return { entity: entity };
   }
 
   setConfig(config) {
@@ -154,10 +163,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
     this.setPVPCHourlyPricingObj();
     this.numberElements = 0;
-    this.lang =
-      this._config.language === undefined || this._config.language === 'hacs'
-        ? this.hass.selectedLanguage || this.hass.language
-        : this._config.language;
+    this.lang = this.hass.selectedLanguage || this.hass.language;
 
     if (!this.pvpcHourlyPricingObj) {
       return html`
@@ -539,25 +545,32 @@ class PVPCHourlyPricingCard extends LitElement {
   getTariffPeriodIcon(tariff) {
     let icon;
 
-    if (tariff == 'discrimination') {
-      const utcHours = new Date().getUTCHours();
-      if (utcHours >= 21 || utcHours < 11) {
-        icon = 'valley';
-      } else {
-        icon = 'peak';
-      }
-    } else if (tariff == 'electric_car') {
-      const hours = new Date().getHours();
-      if (hours >= 13 && hours < 23) {
-        icon = 'peak';
-      } else if (hours >= 1 && hours < 3) {
-        icon = 'valley';
-      } else {
-        icon = 'super-valley';
-      }
+    switch (tariff) {
+      case 'normal':
+        break;
+      case 'discrimination':
+        const utcHours = new Date().getUTCHours();
+        if (utcHours >= 21 || utcHours < 11) {
+          icon = 'valley';
+        } else {
+          icon = 'peak';
+        }
+        break;
+      case 'electric_car':
+        const hours = new Date().getHours();
+        if (hours >= 13 && hours < 23) {
+          icon = 'peak';
+        } else if (hours >= 1 && hours < 3) {
+          icon = 'valley';
+        } else {
+          icon = 'super-valley';
+        }
+        break;
+      default:
+        icon = 'error';
     }
 
-    return tariffPeriodIcons[icon];
+    return icon ? tariffPeriodIcons[icon] : '';
   }
 
   getDateString(datetime) {

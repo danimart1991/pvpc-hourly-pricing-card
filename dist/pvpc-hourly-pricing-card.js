@@ -437,15 +437,16 @@ class PVPCHourlyPricingCard extends LitElement {
           mode: 'index',
           callbacks: {
             title: function (items, data) {
-              const item = items[0];
-              const date = new Date(data.labels[item.index]);
+              const index = items[0].index != 24 ? items[0].index : 23;
+
+              const date = new Date(data.labels[index]);
               const initDate = that.getTimeString(date);
               const endDate = that.getTimeString(date.setHours(date.getHours() + 1));
               return initDate + ' - ' + endDate;
             },
             label: function (tooltipItems, data) {
               let icon;
-              const index = tooltipItems.index;
+              const index = tooltipItems.index != 24 ? tooltipItems.index : 23;
 
               if (tooltipItems.datasetIndex === 0) {
                 if (index == minIndex) {
@@ -483,17 +484,17 @@ class PVPCHourlyPricingCard extends LitElement {
         type: 'line',
         data: this.despiction.pricesNextDay,
         borderWidth: 2.0,
-        lineTension: 0.0,
         pointRadius: 0.0,
         pointHitRadius: 5.0,
-        fill: false
+        fill: false,
+        steppedLine: true
       });
     }
 
     this.ChartData = chartOptions;
   }
 
-  getDespiction(attributes) {    
+  getDespiction(attributes) {
     const priceRegex = /price_\d\dh/;
     const priceNextDayRegex = /price_next_day_\d\dh/;
 
@@ -514,6 +515,10 @@ class PVPCHourlyPricingCard extends LitElement {
       prices.push(priceArray[index]);
       pricesNextDay.push(priceNextDayArray[index]);
     }
+
+    dateTime.push(new Date().setHours(24, 0));
+    prices.push(priceArray[23]);
+    pricesNextDay.push(priceNextDayArray[23]);
 
     data.dateTime = dateTime;
     data.prices = prices;

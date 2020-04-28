@@ -211,11 +211,11 @@ class PVPCHourlyPricingCard extends LitElement {
     const maxPriceFrom = this.getTimeString(new Date().setHours(this.despiction.maxIndex, 0));
     const maxPriceTo = this.getTimeString(new Date().setHours(this.despiction.maxIndex + 1, 0));
     const minPriceNextDay = this.getFixedFloat(this.despiction.minPriceNextDay);
-    const minPriceFromNextDay = this.getTimeString(new Date().setHours(this.despiction.minIndex, 0));
-    const minPriceToNextDay = this.getTimeString(new Date().setHours(this.despiction.minIndex + 1, 0));
+    const minPriceFromNextDay = this.getTimeString(new Date().setHours(this.despiction.minIndexNextDay, 0));
+    const minPriceToNextDay = this.getTimeString(new Date().setHours(this.despiction.minIndexNextDay + 1, 0));
     const maxPriceNextDay = this.getFixedFloat(this.despiction.maxPriceNextDay);
-    const maxPriceFromNextDay = this.getTimeString(new Date().setHours(this.despiction.maxIndex, 0));
-    const maxPriceToNextDay = this.getTimeString(new Date().setHours(this.despiction.maxIndex + 1, 0));
+    const maxPriceFromNextDay = this.getTimeString(new Date().setHours(this.despiction.maxIndexNextDay, 0));
+    const maxPriceToNextDay = this.getTimeString(new Date().setHours(this.despiction.maxIndexNextDay + 1, 0));
 
     this.numberElements++;
 

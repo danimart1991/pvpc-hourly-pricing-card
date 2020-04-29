@@ -44,13 +44,17 @@ resources:
 | current | boolean | `true` | Optional | Show the current price and pricing period |
 | details | boolean | `true` | Optional | Show the lowest and highest prices and hours for the current and next day |
 | graph | boolean | `true` | Optional | Show the graph with the prices for the current and next day |
-| info | boolean | `true` | Optional | Show info like 'Tomorrow's data is no yet available' |
+| info | boolean | `true` | Optional | Show info like '*Tomorrow's data is no yet available*' |
 
 ## Example
 
 ### Mode Storage (Visual)
 
-From your Lovelace Dashboard: *Configure UI ➡ Add New Card ➡ Manual Card* and then this code:
+From your Lovelace Dashboard: *Configure UI ➡ Add New Card ➡ PVPC Hourly Pricing Card*. Configure the card:
+
+![Card Editor](docs/images/card-editor.jpg)
+
+If this doesn't work, another option is to add it manually from your Lovelace Dashboard: *Configure UI ➡ Add New Card ➡ Manual Card* and then this code:
 
 ```yaml
 type: custom:pvpc-hourly-pricing-card

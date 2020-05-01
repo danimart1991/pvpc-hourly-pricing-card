@@ -502,7 +502,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
   getDespiction(attributes) {
     const priceRegex = /price_\d\dh/;
-    const priceNextDayRegex = /price_next_day_\d\dh/;
+    const priceNextDayRegex = /price_(next|last)_day_\d\dh/;
 
     const priceArray = Object.keys(attributes)
       .filter((key) => priceRegex.test(key))

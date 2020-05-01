@@ -306,8 +306,6 @@ class PVPCHourlyPricingCard extends LitElement {
     const hasNextDayData = this.despiction.pricesNextDay[0] !== undefined;
     const minIcon = '▼';
     const maxIcon = '▲';
-    const minIconYOffset = 10;
-    const maxIconYOffset = 6;
 
     const chartOptions = {
       type: 'line',
@@ -320,7 +318,7 @@ class PVPCHourlyPricingCard extends LitElement {
             data: this.despiction.prices,
             borderWidth: 2.0,
             pointRadius: 0.0,
-            pointHitRadius: 5.0,
+            pointHitRadius: 0.0,
             fill: false,
             steppedLine: true
           }
@@ -341,16 +339,23 @@ class PVPCHourlyPricingCard extends LitElement {
             ctx.textBaseline = 'middle';
 
             const meta = chartInstance.controller.getDatasetMeta(0);
-            const minBar = meta.data[minIndex];
+            const minBarStart = meta.data[minIndex];
+            const minBarEnd = meta.data[minIndex + 1];
+            const pointToPointCenterXOffset = (minBarEnd._model.x - minBarStart._model.x) / 2;
             const maxBar = meta.data[maxIndex];
+            const iconYOffset = 8;
             ctx.fillStyle = meta.dataset._model.borderColor;
-            ctx.fillText(minIcon, minBar._model.x, minBar._model.y - minIconYOffset);
-            ctx.fillText(maxIcon, maxBar._model.x, maxBar._model.y - maxIconYOffset);
+            ctx.fillText(minIcon, minBarStart._model.x + pointToPointCenterXOffset, minBarStart._model.y - iconYOffset);
+            ctx.fillText(maxIcon, maxBar._model.x + pointToPointCenterXOffset, maxBar._model.y - iconYOffset);
 
             ctx.save();
+            const selectedIndex =
+              chartInstance.tooltip._active && chartInstance.tooltip._active.length > 0
+                ? chartInstance.tooltip._active[0]._index
+                : today.getHours();
             const yaxis = meta.controller.chart.scales['y-axis-0'];
-            const xBarStart = meta.data[today.getHours()]._model.x;
-            const xBarEnd = meta.data[today.getHours() + 1]._model.x;
+            const xBarStart = meta.data[selectedIndex]._model.x;
+            const xBarEnd = meta.data[selectedIndex + 1]._model.x;
             const yBarStart = yaxis.top;
             const yBarEnd = yaxis.bottom;
             ctx.beginPath();
@@ -373,8 +378,16 @@ class PVPCHourlyPricingCard extends LitElement {
               const minNextDayBar = meta_next_day.data[minIndexNextDay];
               const maxNextDayBar = meta_next_day.data[maxIndexNextDay];
               ctx.fillStyle = meta_next_day.dataset._model.borderColor;
-              ctx.fillText(minIcon, minNextDayBar._model.x, minNextDayBar._model.y - minIconYOffset);
-              ctx.fillText(maxIcon, maxNextDayBar._model.x, maxNextDayBar._model.y - maxIconYOffset);
+              ctx.fillText(
+                minIcon,
+                minNextDayBar._model.x + pointToPointCenterXOffset,
+                minNextDayBar._model.y - iconYOffset
+              );
+              ctx.fillText(
+                maxIcon,
+                maxNextDayBar._model.x + pointToPointCenterXOffset,
+                maxNextDayBar._model.y - iconYOffset
+              );
             }
           }
         },
@@ -441,6 +454,7 @@ class PVPCHourlyPricingCard extends LitElement {
         },
         tooltips: {
           mode: 'index',
+          intersect: false,
           callbacks: {
             title: function (items, data) {
               const index = items[0].index != 24 ? items[0].index : 23;
@@ -491,7 +505,7 @@ class PVPCHourlyPricingCard extends LitElement {
         data: this.despiction.pricesNextDay,
         borderWidth: 2.0,
         pointRadius: 0.0,
-        pointHitRadius: 5.0,
+        pointHitRadius: 0.0,
         fill: false,
         steppedLine: true
       });

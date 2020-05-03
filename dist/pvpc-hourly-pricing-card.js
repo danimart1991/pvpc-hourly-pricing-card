@@ -298,6 +298,7 @@ class PVPCHourlyPricingCard extends LitElement {
     const legendTextColor = style.getPropertyValue('--primary-text-color');
     const axisTextColor = style.getPropertyValue('--secondary-text-color');
     const dividerColor = style.getPropertyValue('--divider-color');
+    const selectionColor = style.getPropertyValue('--paper-item-icon-color');
     const today = new Date();
     const minIndex = this.despiction.minIndex;
     const maxIndex = this.despiction.maxIndex;
@@ -358,18 +359,19 @@ class PVPCHourlyPricingCard extends LitElement {
             const xBarEnd = meta.data[selectedIndex + 1]._model.x;
             const yBarStart = yaxis.top;
             const yBarEnd = yaxis.bottom;
+            ctx.globalAlpha = 0.6;
             ctx.beginPath();
             ctx.moveTo(xBarStart, yBarStart);
             ctx.lineTo(xBarStart, yBarEnd);
-            ctx.strokeStyle = dividerColor;
+            ctx.strokeStyle = selectionColor;
             ctx.stroke();
             ctx.beginPath();
             ctx.moveTo(xBarEnd, yBarStart);
             ctx.lineTo(xBarEnd, yBarEnd);
-            ctx.strokeStyle = dividerColor;
+            ctx.strokeStyle = selectionColor;
             ctx.stroke();
-            ctx.globalAlpha = 0.5;
-            ctx.fillStyle = dividerColor;
+            ctx.globalAlpha = 0.3;
+            ctx.fillStyle = selectionColor;
             ctx.fillRect(xBarStart, yBarStart, xBarEnd - xBarStart, yBarEnd - yBarStart);
             ctx.restore();
 

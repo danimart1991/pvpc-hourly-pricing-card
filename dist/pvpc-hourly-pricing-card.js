@@ -351,7 +351,9 @@ class PVPCHourlyPricingCard extends LitElement {
 
             ctx.save();
             const selectedIndex =
-              chartInstance.tooltip._active && chartInstance.tooltip._active.length > 0
+              chartInstance.tooltip._active &&
+              chartInstance.tooltip._active.length > 0 &&
+              chartInstance.tooltip._active[0]._index < 24
                 ? chartInstance.tooltip._active[0]._index
                 : today.getHours();
             const yaxis = meta.controller.chart.scales['y-axis-0'];
@@ -459,7 +461,7 @@ class PVPCHourlyPricingCard extends LitElement {
           intersect: false,
           callbacks: {
             title: function (items, data) {
-              const index = items[0].index != 24 ? items[0].index : 23;
+              const index = items[0].index != 24 ? items[0].index : (items[0].index = 23);
 
               const date = new Date(data.labels[index]);
               const initDate = that.getTimeString(date);
@@ -468,7 +470,7 @@ class PVPCHourlyPricingCard extends LitElement {
             },
             label: function (tooltipItems, data) {
               let icon;
-              const index = tooltipItems.index != 24 ? tooltipItems.index : 23;
+              const index = tooltipItems.index != 24 ? tooltipItems.index : (tooltipItems[0].index = 23);
 
               if (tooltipItems.datasetIndex === 0) {
                 if (index == minIndex) {

@@ -9,7 +9,7 @@ Home Assistant Lovelace custom card to use with [Spain electricity hourly pricin
 
 ![Card Example](docs/images/card-example.jpg)
 
-> This card only works with a [previously configured Spain electricity hourly pricing (PVPC) integration](https://www.danielmartingonzalez.com/pvpc-tariff-prices-in-home-assistant/) in Home Assistant.
+> This card only works with a [previously configured Spain electricity hourly pricing (PVPC) integration](https://www.danielmartingonzalez.com/en/pvpc-tariff-prices-in-home-assistant/) in Home Assistant.
 
 Based on [Lovelace Weather Card with Chart](https://github.com/sgttrs/lovelace-weather-card-chart) by [Yevgeniy Prokopenko](https://github.com/sgttrs) and the fork [Lovelace Animated Weather Card](https://github.com/MarcHagen/weather-card) by [Marc Hagen](https://github.com/MarcHagen).
 
@@ -24,7 +24,7 @@ Based on [Lovelace Weather Card with Chart](https://github.com/sgttrs/lovelace-w
 
 ## Installation
 
-You could use [HACS](https://hacs.xyz/) or follow this [guide](https://www.danielmartingonzalez.com/installing-lovelace-plugins).
+You could use [HACS](https://hacs.xyz/) or follow this [guide](https://www.danielmartingonzalez.com/en/installing-lovelace-plugins).
 
 ```yaml
 resources:

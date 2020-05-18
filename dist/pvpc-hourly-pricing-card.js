@@ -470,7 +470,7 @@ class PVPCHourlyPricingCard extends LitElement {
             },
             label: function (tooltipItems, data) {
               let icon;
-              const index = tooltipItems.index != 24 ? tooltipItems.index : (tooltipItems[0].index = 23);
+              const index = tooltipItems.index != 24 ? tooltipItems.index : (tooltipItems.index = 23);
 
               if (tooltipItems.datasetIndex === 0) {
                 if (index == minIndex) {

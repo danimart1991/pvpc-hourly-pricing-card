@@ -128,7 +128,7 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
 
     return html`
       <div class="card-config">
-        <div  class="side-by-side">
+        <div class="side-by-side">
           <paper-input
             label="${this.ll('optionName')}"
             .value="${this._name}"

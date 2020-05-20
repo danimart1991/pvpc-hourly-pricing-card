@@ -77,11 +77,25 @@ const locale = {
   }
 };
 
+const tariffPeriodIconColors = {
+  error: '--error-color',
+  normal: '--google-yellow-500',
+  peak: '--google-red-500',
+  valley: '--google-green-500',
+  'super-valley': '--google-blue-500'
+};
+
 const tariffPeriodIcons = {
-  error: 'mdi:alert-circle',
-  peak: 'mdi:weather-sunny',
-  valley: 'mdi:weather-night',
-  'super-valley': 'mdi:car-electric'
+  error:
+    'M 28.342306,10.429944 27.798557,32.995546 H 24.243272 L 23.657695,10.429944 Z M 28.133172,41.570057 H 23.86683 v -4.412736 h 4.266342 z',
+  normal:
+    'M 31.032172,16.612305 20.999855,32.113255 15.66609,25.065424 H 0.97821381 a 25.017275,25.017275 0 0 0 -0.0332829,0.949884 25.017275,25.017275 0 0 0 0.0468985,0.940092 H 14.800215 l 6.199595,8.453119 10.03232,-15.502917 5.335714,7.049798 h 14.578421 a 25.017275,25.017275 0 0 0 0.03328,-0.940092 25.017275,25.017275 0 0 0 -0.0469,-0.949884 H 37.233737 Z',
+  peak:
+    'M 2.5238392,34.768609 A 25.003164,25.003164 0 0 1 1.9104804,32.879664 h 8.6436716 l 15.49805,-22.870055 15.121052,22.870055 h 8.891749 a 25.003164,25.003164 0 0 1 -0.628986,1.888945 H 40.038344 L 26.052202,13.679995 12.06606,34.768609 Z',
+  valley:
+    'm 2.5238392,17.238401 a 25.003164,25.003164 0 0 0 -0.6133588,1.888945 h 8.6436716 l 15.49805,22.870055 15.121052,-22.870055 h 8.891749 A 25.003164,25.003164 0 0 0 49.436017,17.238401 H 40.038344 L 26.052202,38.327015 12.06606,17.238401 Z',
+  'super-valley':
+    'm 30.867213,27.342466 c 0,0.670334 -0.543413,1.213747 -1.213747,1.213746 -0.670333,-10e-7 -1.213744,-0.543413 -1.213744,-1.213746 0,-0.670333 0.543411,-1.213745 1.213744,-1.213746 0.670334,-1e-6 1.213747,0.543412 1.213747,1.213746 z m -7.282476,0 c 0,0.670333 -0.543412,1.213746 -1.213745,1.213746 -0.670334,0 -1.213746,-0.543412 -1.213746,-1.213746 0,-0.670334 0.543412,-1.213746 1.213746,-1.213746 0.670333,0 1.213745,0.543413 1.213745,1.213746 z m 8.026907,-6.869803 c -0.161832,-0.477407 -0.614966,-0.817256 -1.149013,-0.817256 h -8.900804 c -0.534048,0 -0.979088,0.339849 -1.149012,0.817256 l -1.683061,4.846893 v 6.473312 c 0,0.445039 0.364123,0.809164 0.809163,0.809164 h 0.809164 c 0.445041,0 0.809165,-0.364125 0.809165,-0.809164 v -0.809165 h 9.709967 v 0.809165 c 0,0.445039 0.364125,0.809164 0.809164,0.809164 h 0.809165 c 0.445039,0 0.809163,-0.364125 0.809163,-0.809164 v -6.473312 z m -9.800018,0.767664 h 8.393115 l 0.841531,2.49431 H 20.970096 Z m 9.89816,8.158458 H 20.314672 v -3.837522 l 0.0971,-0.275116 h 11.209006 l 0.089,0.275116 z M 25.208235,17.875001 v -1.607989 h -3.215979 l 4.823966,-2.411981 v 1.607988 H 30.0322 Z M 2.5904451,17.061236 C 2.3615878,17.681074 2.1574473,18.309759 1.9785073,18.945805 H 10.602006 V 37.331696 H 41.150085 V 18.945805 h 8.871408 c -0.184075,-0.636272 -0.393416,-1.26496 -0.62753,-1.884569 H 38.720725 V 35.001194 H 12.908652 V 17.061236 Z'
 };
 
 const fireEvent = (node, type, detail, options) => {
@@ -194,11 +208,19 @@ class PVPCHourlyPricingCard extends LitElement {
 
   renderCurrent() {
     this.numberElements++;
+    const tariffPeriod = this.getTariffPeriod(this.pvpcHourlyPricingObj.attributes.tariff);
+    const style = getComputedStyle(document.body);
+    const iconColor = style.getPropertyValue(tariffPeriodIconColors[tariffPeriod]);
 
     return html`
       <div class="current tappable ${this.numberElements > 1 ? 'spacer' : ''}" @click="${this._handleClick}">
-        <ha-icon class="period-icon" icon="${this.getTariffPeriodIcon(this.pvpcHourlyPricingObj.attributes.tariff)}">
-        </ha-icon>
+        <svg class="period-icon" viewBox="0 0 52 52">
+          <circle fill="${iconColor}" r="25" cy="26" cx="26" />
+          <path fill="#f9f9f9" d="${tariffPeriodIcons[tariffPeriod]}" />
+        </svg>
+
+        <!--<ha-icon class="period-icon" icon="${tariffPeriodIcons[tariffPeriod]}">
+        </ha-icon>-->
         <span class="currentPrice">${this.getFixedFloat(this.pvpcHourlyPricingObj.state)}</span>
         <span class="currentPriceUnit"> ${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}</span>
       </div>
@@ -298,7 +320,7 @@ class PVPCHourlyPricingCard extends LitElement {
     const legendTextColor = style.getPropertyValue('--primary-text-color');
     const axisTextColor = style.getPropertyValue('--secondary-text-color');
     const dividerColor = style.getPropertyValue('--divider-color');
-    const selectionColor = style.getPropertyValue('--paper-item-icon-color');
+    const selectionColor = style.getPropertyValue('--paper-grey-500');
     const today = new Date();
     const minIndex = this.despiction.minIndex;
     const maxIndex = this.despiction.maxIndex;
@@ -560,35 +582,36 @@ class PVPCHourlyPricingCard extends LitElement {
     return data;
   }
 
-  getTariffPeriodIcon(tariff) {
-    let icon;
+  getTariffPeriod(tariff) {
+    let period;
 
     switch (tariff) {
       case 'normal':
+        period = 'normal';
         break;
       case 'discrimination':
         const utcHours = new Date().getUTCHours();
         if (utcHours >= 21 || utcHours < 11) {
-          icon = 'valley';
+          period = 'valley';
         } else {
-          icon = 'peak';
+          period = 'peak';
         }
         break;
       case 'electric_car':
         const hours = new Date().getHours();
         if (hours >= 13 && hours < 23) {
-          icon = 'peak';
+          period = 'peak';
         } else if (hours >= 1 && hours < 3) {
-          icon = 'valley';
+          period = 'valley';
         } else {
-          icon = 'super-valley';
+          period = 'super-valley';
         }
         break;
       default:
-        icon = 'error';
+        period = 'error';
     }
 
-    return icon ? tariffPeriodIcons[icon] : '';
+    return period;
   }
 
   getDateString(datetime) {
@@ -647,7 +670,7 @@ class PVPCHourlyPricingCard extends LitElement {
       }
 
       .current {
-        height: 6em;
+        height: 5.5em;
         position: relative;
         display: flex;
         align-items: center;
@@ -655,8 +678,10 @@ class PVPCHourlyPricingCard extends LitElement {
       }
 
       .period-icon {
-        width: 6em;
-        height: 6em;
+        padding-left: 16px;
+        padding-right: 16px;
+        width: 5.5em;
+        height: 5.5em;
       }
 
       .currentPrice {

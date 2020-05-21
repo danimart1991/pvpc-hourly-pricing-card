@@ -219,8 +219,6 @@ class PVPCHourlyPricingCard extends LitElement {
           <path fill="#f9f9f9" d="${tariffPeriodIcons[tariffPeriod]}" />
         </svg>
 
-        <!--<ha-icon class="period-icon" icon="${tariffPeriodIcons[tariffPeriod]}">
-        </ha-icon>-->
         <span class="currentPrice">${this.getFixedFloat(this.pvpcHourlyPricingObj.state)}</span>
         <span class="currentPriceUnit"> ${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}</span>
       </div>

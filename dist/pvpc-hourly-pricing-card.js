@@ -597,12 +597,12 @@ class PVPCHourlyPricingCard extends LitElement {
         break;
       case 'electric_car':
         const hours = new Date().getHours();
-        if (hours >= 13 && hours < 23) {
+        if (hours >= 1 && hours < 7) {
+            period = 'super-valley';
+        } else if (hours >= 13 && hours < 23) {
           period = 'peak';
-        } else if (hours >= 1 && hours < 3) {
-          period = 'valley';
         } else {
-          period = 'super-valley';
+          period = 'valley';
         }
         break;
       default:

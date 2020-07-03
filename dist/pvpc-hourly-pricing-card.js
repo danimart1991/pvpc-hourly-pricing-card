@@ -79,10 +79,10 @@ const locale = {
 
 const tariffPeriodIconColors = {
   error: '--error-color',
-  normal: '--google-yellow-500',
-  peak: '--google-red-500',
-  valley: '--google-green-500',
-  'super-valley': '--google-blue-500'
+  normal: '--warning-color',
+  peak: '--error-color',
+  valley: '--success-color',
+  'super-valley': '--info-color'
 };
 
 const tariffPeriodIcons = {

@@ -151,20 +151,24 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
           </paper-dropdown-menu>
         </div>
         <div class="side-by-side">
-          <ha-switch .checked=${this._current} .configValue="${'current'}" @change="${this._valueChanged}"
-            >${this.ll('optionShowCurrent')}</ha-switch
-          >
-          <ha-switch .checked=${this._details} .configValue="${'details'}" @change="${this._valueChanged}"
-            >${this.ll('optionShowDetails')}</ha-switch
-          >
+          <div>
+            <ha-switch .checked=${this._current} .configValue="${'current'}" @change="${this._valueChanged}"></ha-switch>
+            <label class="mdc-label">${this.ll('optionShowCurrent')}</label>
+          </div>
+          <div>
+            <ha-switch .checked=${this._details} .configValue="${'details'}" @change="${this._valueChanged}" ></ha-switch>
+            <label class="mdc-label">${this.ll('optionShowDetails')}</label>
+          </div>
         </div>
         <div class="side-by-side">
-          <ha-switch .checked=${this._graph} .configValue="${'graph'}" @change="${this._valueChanged}"
-            >${this.ll('optionShowGraph')}</ha-switch
-          >
-          <ha-switch .checked=${this._info} .configValue="${'info'}" @change="${this._valueChanged}"
-            >${this.ll('optionShowInfo')}</ha-switch
-          >
+          <div>
+            <ha-switch .checked=${this._graph} .configValue="${'graph'}" @change="${this._valueChanged}" ></ha-switch>
+            <label class="mdc-label">${this.ll('optionShowGraph')}</label>
+          </div>
+          <div>
+            <ha-switch .checked=${this._info} .configValue="${'info'}" @change="${this._valueChanged}" ></ha-switch>
+            <label class="mdc-label">${this.ll('optionShowInfo')}</label>
+          </div>
         </div>
       </div>
     `;
@@ -203,6 +207,10 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
     return css`
       ha-switch {
         padding-top: 16px;
+      }
+      .mdc-label {
+        margin-left: 12px;
+        vertical-align: text-bottom;
       }
       .side-by-side {
         display: flex;

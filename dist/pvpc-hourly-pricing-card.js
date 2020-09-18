@@ -167,7 +167,10 @@ class PVPCHourlyPricingCard extends LitElement {
   updated(param) {
     this.setPVPCHourlyPricingObj();
     let chart = this.shadowRoot.getElementById('Chart');
-    if (chart) chart.data = this.ChartData;
+    if (chart) {
+      chart.data = this.ChartData;
+      chart.hass = this.hass;
+    }
   }
 
   render() {
@@ -189,9 +192,7 @@ class PVPCHourlyPricingCard extends LitElement {
           }
         </style>
         <ha-card>
-          <div class="not-found">
-            Entity not available: ${this._config.entity}
-          </div>
+          <div class="not-found">Entity not available: ${this._config.entity}</div>
         </ha-card>
       `;
     }
@@ -300,9 +301,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
     if (!this.despiction.minPriceNextDay) {
       return html`
-        <div class="info clear ${this.numberElements > 1 ? 'spacer' : ''}">
-          ${this.ll('infoNoNextDay')}
-        </div>
+        <div class="info clear ${this.numberElements > 1 ? 'spacer' : ''}">${this.ll('infoNoNextDay')}</div>
       `;
     } else {
       return html``;
@@ -598,7 +597,7 @@ class PVPCHourlyPricingCard extends LitElement {
       case 'electric_car':
         const hours = new Date().getHours();
         if (hours >= 1 && hours < 7) {
-            period = 'super-valley';
+          period = 'super-valley';
         } else if (hours >= 13 && hours < 23) {
           period = 'peak';
         } else {

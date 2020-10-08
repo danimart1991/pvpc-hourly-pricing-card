@@ -78,9 +78,9 @@ const locale = {
   }
 };
 
-const LitElement = Object.getPrototypeOf(customElements.get('hui-view'));
-const html = LitElement.prototype.html;
-const css = LitElement.prototype.css;
+const LitElement =
+  window.LitElement || Object.getPrototypeOf(customElements.get('home-assistant') || customElements.get('hui-view'));
+const { html, css } = LitElement.prototype;
 
 export class PVPCHourlyPricingCardEditor extends LitElement {
   setConfig(config) {
@@ -152,21 +152,29 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
         </div>
         <div class="side-by-side">
           <div>
-            <ha-switch .checked=${this._current} .configValue="${'current'}" @change="${this._valueChanged}"></ha-switch>
+            <ha-switch
+              .checked=${this._current}
+              .configValue="${'current'}"
+              @change="${this._valueChanged}"
+            ></ha-switch>
             <label class="mdc-label">${this.ll('optionShowCurrent')}</label>
           </div>
           <div>
-            <ha-switch .checked=${this._details} .configValue="${'details'}" @change="${this._valueChanged}" ></ha-switch>
+            <ha-switch
+              .checked=${this._details}
+              .configValue="${'details'}"
+              @change="${this._valueChanged}"
+            ></ha-switch>
             <label class="mdc-label">${this.ll('optionShowDetails')}</label>
           </div>
         </div>
         <div class="side-by-side">
           <div>
-            <ha-switch .checked=${this._graph} .configValue="${'graph'}" @change="${this._valueChanged}" ></ha-switch>
+            <ha-switch .checked=${this._graph} .configValue="${'graph'}" @change="${this._valueChanged}"></ha-switch>
             <label class="mdc-label">${this.ll('optionShowGraph')}</label>
           </div>
           <div>
-            <ha-switch .checked=${this._info} .configValue="${'info'}" @change="${this._valueChanged}" ></ha-switch>
+            <ha-switch .checked=${this._info} .configValue="${'info'}" @change="${this._valueChanged}"></ha-switch>
             <label class="mdc-label">${this.ll('optionShowInfo')}</label>
           </div>
         </div>

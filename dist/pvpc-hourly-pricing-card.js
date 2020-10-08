@@ -1,6 +1,6 @@
-const LitElement = Object.getPrototypeOf(customElements.get('hui-view'));
-const html = LitElement.prototype.html;
-const css = LitElement.prototype.css;
+const LitElement =
+  window.LitElement || Object.getPrototypeOf(customElements.get('home-assistant') || customElements.get('hui-view'));
+const { html, css } = LitElement.prototype;
 
 const locale = {
   da: {
@@ -126,7 +126,10 @@ function hasConfigOrEntityChanged(element, changedProps) {
 
 class PVPCHourlyPricingCard extends LitElement {
   static get properties() {
-    return { _config: {}, hass: {} };
+    return {
+      _config: { type: Object },
+      hass: { type: Object }
+    };
   }
 
   static async getConfigElement() {

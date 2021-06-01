@@ -582,7 +582,7 @@ class PVPCHourlyPricingCard extends LitElement {
     return data;
   }
 
-  getTariffPeriod() {
+  getTariffPeriod(tariff) {
       let period;
       var now = new Date();
       var hour = now.getHours();

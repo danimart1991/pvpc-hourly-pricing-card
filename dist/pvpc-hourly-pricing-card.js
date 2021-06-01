@@ -607,9 +607,9 @@ class PVPCHourlyPricingCard extends LitElement {
         "25-04-2038", "10-04-2039", "01-04-2040", "21-04-2041", "06-04-2042", "29-03-2043", "17-04-2044", "09-04-2045", "25-03-2046", "14-04-2047",
         "05-04-2048", "18-04-2049", "10-04-2050", "02-04-2051", "21-04-2052", "06-04-2053", "29-03-2054", "18-04-2055", "02-04-2056", "22-04-2057"];
 
-      if (festives.indexOf(this.formatDate(new Date(2018,3,6))) > -1) {
+      if (festives.indexOf(this.formatDate())) > -1) {
           return true;
-      } else if (ss.indexOf(this.formatFullDateSS(new Date(2018,3,6))) > -1) {
+      } else if (ss.indexOf(this.formatFullDateSS()) > -1) {
           return true;
       } else {
           return false;

@@ -98,6 +98,8 @@ const tariffPeriodIcons = {
     'm 30.867213,27.342466 c 0,0.670334 -0.543413,1.213747 -1.213747,1.213746 -0.670333,-10e-7 -1.213744,-0.543413 -1.213744,-1.213746 0,-0.670333 0.543411,-1.213745 1.213744,-1.213746 0.670334,-1e-6 1.213747,0.543412 1.213747,1.213746 z m -7.282476,0 c 0,0.670333 -0.543412,1.213746 -1.213745,1.213746 -0.670334,0 -1.213746,-0.543412 -1.213746,-1.213746 0,-0.670334 0.543412,-1.213746 1.213746,-1.213746 0.670333,0 1.213745,0.543413 1.213745,1.213746 z m 8.026907,-6.869803 c -0.161832,-0.477407 -0.614966,-0.817256 -1.149013,-0.817256 h -8.900804 c -0.534048,0 -0.979088,0.339849 -1.149012,0.817256 l -1.683061,4.846893 v 6.473312 c 0,0.445039 0.364123,0.809164 0.809163,0.809164 h 0.809164 c 0.445041,0 0.809165,-0.364125 0.809165,-0.809164 v -0.809165 h 9.709967 v 0.809165 c 0,0.445039 0.364125,0.809164 0.809164,0.809164 h 0.809165 c 0.445039,0 0.809163,-0.364125 0.809163,-0.809164 v -6.473312 z m -9.800018,0.767664 h 8.393115 l 0.841531,2.49431 H 20.970096 Z m 9.89816,8.158458 H 20.314672 v -3.837522 l 0.0971,-0.275116 h 11.209006 l 0.089,0.275116 z M 25.208235,17.875001 v -1.607989 h -3.215979 l 4.823966,-2.411981 v 1.607988 H 30.0322 Z M 2.5904451,17.061236 C 2.3615878,17.681074 2.1574473,18.309759 1.9785073,18.945805 H 10.602006 V 37.331696 H 41.150085 V 18.945805 h 8.871408 c -0.184075,-0.636272 -0.393416,-1.26496 -0.62753,-1.884569 H 38.720725 V 35.001194 H 12.908652 V 17.061236 Z'
 };
 
+const festives = ['01-01', '06-01', '01-05', '12-10', '01-11', '06-12', '08-12', '25-12'];
+
 const fireEvent = (node, type, detail, options) => {
   options = options || {};
   detail = detail === null || detail === undefined ? {} : detail;
@@ -583,61 +585,31 @@ class PVPCHourlyPricingCard extends LitElement {
   }
 
   getTariffPeriod(tariff) {
-      let period;
-      var now = new Date();
-      var hour = now.getHours();
-      var dayOfWeek = now.getDay();
-      if (hour < 8) {
-          period = "valley";
-      } else if (dayOfWeek == 6 || dayOfWeek == 0 || this.isFestive()) {
-          period = "valley";
-      } else if ((hour >= 10 && hour < 14) || (hour >= 18 && hour < 22)) {
-          period = "peak";
-      } else {
-          period = "normal"
-      }
-      return period;
+    let period;
+    var now = new Date();
+    var hour = now.getHours();
+    var dayOfWeek = now.getDay();
+    if (hour < 8 || dayOfWeek == 6 || dayOfWeek == 0 || this.isFestive(now)) {
+      period = 'valley';
+    } else if ((hour >= 10 && hour < 14) || (hour >= 18 && hour < 22)) {
+      period = 'peak';
+    } else {
+      period = 'normal';
+    }
+    return period;
   }
-  
-  isFestive() {
-      let festives = ["01-01", "06-01", "01-05", "12-10", "01-11", "06-12", "08-12", "25-12"];
 
-      let ss = ["01-04-2018", "21-04-2019", "12-04-2020", "04-04-2021", "17-04-2022", "09-04-2023", "31-03-2024", "20-04-2025", "05-04-2026", "28-03-2027",
-        "16-04-2028", "01-04-2029", "21-04-2030", "13-04-2031", "28-03-2032", "17-04-2033", "09-04-2034", "25-03-2035", "13-04-2036", "05-04-2037",
-        "25-04-2038", "10-04-2039", "01-04-2040", "21-04-2041", "06-04-2042", "29-03-2043", "17-04-2044", "09-04-2045", "25-03-2046", "14-04-2047",
-        "05-04-2048", "18-04-2049", "10-04-2050", "02-04-2051", "21-04-2052", "06-04-2053", "29-03-2054", "18-04-2055", "02-04-2056", "22-04-2057"];
-
-      if (festives.indexOf(this.formatDate(new Date())) > -1) {
-          return true;
-      } else if (ss.indexOf(this.formatFullDate(new Date())) > -1) {
-          return true;
-      } else {
-          return false;
-      }
+  isFestive(datetime) {
+    return festives.indexOf(this.formatDate(datetime)) > -1;
   }
-  
+
   formatDate(datetime) {
-      let day = datetime.getDate();
-      let month = datetime.getMonth() + 1;
-  
-      if (day < 10) day = "0" + day;
-      if (month < 10) month = "0" + month;
-  
-      return day + "-" + month;
+    let day = datetime.getDate();
+    let month = datetime.getMonth() + 1;
+
+    return day.toString().padStart(2, 0) + '-' + month.toString().padStart(2, 0);
   }
-  
-  formatFullDate(datetime) {
-      datetime.setDate(datetime.getDate() - 5)
-      let day = datetime.getDate();
-      let month = datetime.getMonth() + 1;
-      let year = datetime.getFullYear();
-  
-      if (day < 10) day = "0" + day;
-      if (month < 10) month = "0" + month;
-  
-      return day + "-" + month + "-" + year;
-  }
-  
+
   getDateString(datetime) {
     return new Date(datetime).toLocaleDateString(this.lang, {
       day: '2-digit',

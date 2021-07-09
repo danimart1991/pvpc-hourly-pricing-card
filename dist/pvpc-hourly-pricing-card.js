@@ -79,23 +79,19 @@ const locale = {
 };
 
 const tariffPeriodIconColors = {
-  error: '--error-color',
-  valley: '--success-color',
-  plain: '--warning-color',
-  peak: '--error-color'
+  Error: '--error-color',
+  P3: '--success-color',
+  P2: '--warning-color',
+  P1: '--error-color'
 };
 
 const tariffPeriodIcons = {
-  error:
+  Error:
     'M 28.342306,10.429944 27.798557,32.995546 H 24.243272 L 23.657695,10.429944 Z M 28.133172,41.570057 H 23.86683 v -4.412736 h 4.266342 z',
-  valley:
-    'm 2.5238392,17.238401 a 25.003164,25.003164 0 0 0 -0.6133588,1.888945 h 8.6436716 l 15.49805,22.870055 15.121052,-22.870055 h 8.891749 A 25.003164,25.003164 0 0 0 49.436017,17.238401 H 40.038344 L 26.052202,38.327015 12.06606,17.238401 Z',
-  plain:
-    'M 31.032172,16.612305 20.999855,32.113255 15.66609,25.065424 H 0.97821381 a 25.017275,25.017275 0 0 0 -0.0332829,0.949884 25.017275,25.017275 0 0 0 0.0468985,0.940092 H 14.800215 l 6.199595,8.453119 10.03232,-15.502917 5.335714,7.049798 h 14.578421 a 25.017275,25.017275 0 0 0 0.03328,-0.940092 25.017275,25.017275 0 0 0 -0.0469,-0.949884 H 37.233737 Z',
-  peak: 'M 2.5238392,34.768609 A 25.003164,25.003164 0 0 1 1.9104804,32.879664 h 8.6436716 l 15.49805,-22.870055 15.121052,22.870055 h 8.891749 a 25.003164,25.003164 0 0 1 -0.628986,1.888945 H 40.038344 L 26.052202,13.679995 12.06606,34.768609 Z'
+  P3: 'm 2.5238392,17.238401 a 25.003164,25.003164 0 0 0 -0.6133588,1.888945 h 8.6436716 l 15.49805,22.870055 15.121052,-22.870055 h 8.891749 A 25.003164,25.003164 0 0 0 49.436017,17.238401 H 40.038344 L 26.052202,38.327015 12.06606,17.238401 Z',
+  P2: 'M 31.032172,16.612305 20.999855,32.113255 15.66609,25.065424 H 0.97821381 a 25.017275,25.017275 0 0 0 -0.0332829,0.949884 25.017275,25.017275 0 0 0 0.0468985,0.940092 H 14.800215 l 6.199595,8.453119 10.03232,-15.502917 5.335714,7.049798 h 14.578421 a 25.017275,25.017275 0 0 0 0.03328,-0.940092 25.017275,25.017275 0 0 0 -0.0469,-0.949884 H 37.233737 Z',
+  P1: 'M 2.5238392,34.768609 A 25.003164,25.003164 0 0 1 1.9104804,32.879664 h 8.6436716 l 15.49805,-22.870055 15.121052,22.870055 h 8.891749 a 25.003164,25.003164 0 0 1 -0.628986,1.888945 H 40.038344 L 26.052202,13.679995 12.06606,34.768609 Z'
 };
-
-const festives = ['01-01', '06-01', '01-05', '12-10', '01-11', '06-12', '08-12', '25-12'];
 
 const fireEvent = (node, type, detail, options) => {
   options = options || {};
@@ -170,8 +166,9 @@ class PVPCHourlyPricingCard extends LitElement {
     this.setPVPCHourlyPricingObj();
     let chart = this.shadowRoot.getElementById('Chart');
     if (chart) {
-      chart.data = this.ChartData;
-      chart.hass = this.hass;
+      chart.type = this.ChartData.type;
+      chart.data = this.ChartData.data;
+      chart.options = this.ChartData.options;
     }
   }
 
@@ -211,7 +208,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
   renderCurrent() {
     this.numberElements++;
-    const tariffPeriod = this.getTariffPeriod();
+    const tariffPeriod = this.pvpcHourlyPricingObj.attributes.period || 'Error';
     const style = getComputedStyle(document.body);
     const iconColor = style.getPropertyValue(tariffPeriodIconColors[tariffPeriod]);
 
@@ -316,10 +313,9 @@ class PVPCHourlyPricingCard extends LitElement {
     const that = this;
 
     const style = getComputedStyle(document.body);
-    const legendTextColor = style.getPropertyValue('--primary-text-color');
-    const axisTextColor = style.getPropertyValue('--secondary-text-color');
-    const dividerColor = style.getPropertyValue('--divider-color');
-    const selectionColor = style.getPropertyValue('--paper-grey-500');
+    const selectionColor = style.getPropertyValue('--secondary-text-color');
+    const todayColor = style.getPropertyValue('--primary-color');
+    const tomorrowColor = style.getPropertyValue('--accent-color');
     const today = new Date();
     const minIndex = this.despiction.minIndex;
     const maxIndex = this.despiction.maxIndex;
@@ -336,188 +332,152 @@ class PVPCHourlyPricingCard extends LitElement {
         datasets: [
           {
             label: that.getDateString(today),
-            type: 'line',
             data: this.despiction.prices,
-            borderWidth: 2.0,
-            pointRadius: 0.0,
-            pointHitRadius: 0.0,
+            pointRadius: 0,
+            borderColor: todayColor,
+            backgroundColor: todayColor + '7F',
             fill: false,
-            steppedLine: true
+            stepped: 'before'
           }
         ]
       },
       options: {
         animation: {
-          duration: 300,
+          duration: 0,
           easing: 'linear',
-          onComplete: function () {
-            const chartInstance = this.chart;
+          onComplete: function (context) {
+            const chartInstance = context.chart;
             const ctx = chartInstance.ctx;
-            const fontSize = 12;
-            const fontStyle = 'normal';
-            const fontFamily = 'Roboto';
-            ctx.font = Chart.helpers.fontString(fontSize, fontStyle, fontFamily);
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            const meta = chartInstance.controller.getDatasetMeta(0);
-            const minBarStart = meta.data[minIndex];
-            const minBarEnd = meta.data[minIndex + 1];
-            const pointToPointCenterXOffset = (minBarEnd._model.x - minBarStart._model.x) / 2;
-            const maxBar = meta.data[maxIndex];
-            const iconYOffset = 8;
-            ctx.fillStyle = meta.dataset._model.borderColor;
-            ctx.fillText(minIcon, minBarStart._model.x + pointToPointCenterXOffset, minBarStart._model.y - iconYOffset);
-            ctx.fillText(maxIcon, maxBar._model.x + pointToPointCenterXOffset, maxBar._model.y - iconYOffset);
+            const meta = chartInstance._metasets[0];
 
             ctx.save();
             const selectedIndex =
-              chartInstance.tooltip._active &&
-              chartInstance.tooltip._active.length > 0 &&
-              chartInstance.tooltip._active[0]._index < 24
-                ? chartInstance.tooltip._active[0]._index
+              chartInstance._active && chartInstance._active.length > 0 && chartInstance._active[0].index < 24
+                ? chartInstance._active[0].index
                 : today.getHours();
-            const yaxis = meta.controller.chart.scales['y-axis-0'];
-            const xBarStart = meta.data[selectedIndex]._model.x;
-            const xBarEnd = meta.data[selectedIndex + 1]._model.x;
+            const yaxis = chartInstance.chartArea;
+            const xBarStart = meta.data[selectedIndex].x;
+            const xBarEnd = meta.data[selectedIndex + 1].x;
             const yBarStart = yaxis.top;
             const yBarEnd = yaxis.bottom;
-            ctx.globalAlpha = 0.6;
-            ctx.beginPath();
-            ctx.moveTo(xBarStart, yBarStart);
-            ctx.lineTo(xBarStart, yBarEnd);
-            ctx.strokeStyle = selectionColor;
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(xBarEnd, yBarStart);
-            ctx.lineTo(xBarEnd, yBarEnd);
-            ctx.strokeStyle = selectionColor;
-            ctx.stroke();
             ctx.globalAlpha = 0.3;
             ctx.fillStyle = selectionColor;
             ctx.fillRect(xBarStart, yBarStart, xBarEnd - xBarStart, yBarEnd - yBarStart);
             ctx.restore();
 
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const minBarStart = meta.data[minIndex];
+            const minBarEnd = meta.data[minIndex + 1];
+            const pointToPointCenterXOffset = (minBarEnd.x - minBarStart.x) / 2;
+            const maxBar = meta.data[maxIndex];
+            const iconYOffset = 8;
+            ctx.fillStyle = meta.dataset.options.borderColor;
+            ctx.fillText(minIcon, minBarStart.x + pointToPointCenterXOffset, minBarStart.y - iconYOffset);
+            ctx.fillText(maxIcon, maxBar.x + pointToPointCenterXOffset, maxBar.y - iconYOffset);
+
             if (hasNextDayData) {
-              const meta_next_day = chartInstance.controller.getDatasetMeta(1);
+              const meta_next_day = chartInstance._metasets[1];
               const minNextDayBar = meta_next_day.data[minIndexNextDay];
               const maxNextDayBar = meta_next_day.data[maxIndexNextDay];
-              ctx.fillStyle = meta_next_day.dataset._model.borderColor;
-              ctx.fillText(
-                minIcon,
-                minNextDayBar._model.x + pointToPointCenterXOffset,
-                minNextDayBar._model.y - iconYOffset
-              );
-              ctx.fillText(
-                maxIcon,
-                maxNextDayBar._model.x + pointToPointCenterXOffset,
-                maxNextDayBar._model.y - iconYOffset
-              );
+              ctx.fillStyle = meta_next_day.dataset.options.borderColor;
+              ctx.fillText(minIcon, minNextDayBar.x + pointToPointCenterXOffset, minNextDayBar.y - iconYOffset);
+              ctx.fillText(maxIcon, maxNextDayBar.x + pointToPointCenterXOffset, maxNextDayBar.y - iconYOffset);
             }
-          }
-        },
-        legend: {
-          display: true,
-          labels: {
-            fontColor: legendTextColor,
-            fontSize: 14,
-            usePointStyle: true,
-            boxWidth: 6
           }
         },
         scales: {
-          xAxes: [
-            {
-              type: 'time',
-              maxBarThickness: 15,
-              display: false,
-              ticks: {
-                display: false
-              },
-              gridLines: {
-                display: false
+          x: {
+            type: 'time',
+            adapters: {
+              date: {
+                locale: this.hass.locale
               }
             },
-            {
-              position: 'bottom',
-              gridLines: {
-                display: true,
-                drawTicks: false,
-                drawBorder: false,
-                color: dividerColor
-              },
-              ticks: {
-                display: true,
-                padding: 10,
-                source: 'labels',
-                autoSkip: true,
-                fontColor: axisTextColor,
-                maxRotation: 0,
-                callback: function (value, index, values) {
-                  return that.getHourString.call(that, value);
-                }
-              }
+            ticks: {
+              maxRotation: 0,
+              sampleSize: 5,
+              autoSkipPadding: 20
+            },
+            time: {
+              tooltipFormat: 'hours'
             }
-          ],
-          yAxes: [
-            {
-              position: 'left',
-              gridLines: {
-                display: true,
-                drawBorder: false,
-                drawTicks: false,
-                color: dividerColor,
-                borderDash: [4, 6]
-              },
-              ticks: {
-                display: true,
-                padding: 10,
-                fontColor: axisTextColor
-              }
+          },
+          y: {
+            ticks: {
+              maxTicksLimit: 7
+            },
+            title: {
+              display: true,
+              text: that.pvpcHourlyPricingObj.attributes.unit_of_measurement
             }
-          ]
+          }
         },
-        tooltips: {
-          mode: 'index',
+        interaction: {
           intersect: false,
-          callbacks: {
-            title: function (items, data) {
-              const index = items[0].index != 24 ? items[0].index : (items[0].index = 23);
+          mode: 'index'
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: function (tooltipItems, data) {
+                let index =
+                  tooltipItems[0].dataIndex != 24 ? tooltipItems[0].dataIndex : (tooltipItems[0].dataIndex = 23);
+                let date = new Date(new Date().setHours(index, 0));
+                let initDate = that.getTimeString(date);
+                let endDate = that.getTimeString(date.setHours(date.getHours() + 1));
+                return initDate + ' - ' + endDate;
+              },
+              label: function (tooltipItem, data) {
+                let icon;
+                const index = tooltipItem.dataIndex != 24 ? tooltipItem.dataIndex : (tooltipItem.dataIndex = 23);
 
-              const date = new Date(data.labels[index]);
-              const initDate = that.getTimeString(date);
-              const endDate = that.getTimeString(date.setHours(date.getHours() + 1));
-              return initDate + ' - ' + endDate;
-            },
-            label: function (tooltipItems, data) {
-              let icon;
-              const index = tooltipItems.index != 24 ? tooltipItems.index : (tooltipItems.index = 23);
+                if (tooltipItem.datasetIndex === 0) {
+                  if (index == minIndex) {
+                    icon = minIcon;
+                  } else if (index == maxIndex) {
+                    icon = maxIcon;
+                  }
+                } else if (tooltipItem.datasetIndex === 1) {
+                  if (index == minIndexNextDay) {
+                    icon = minIcon;
+                  } else if (index == maxIndexNextDay) {
+                    icon = maxIcon;
+                  }
+                }
 
-              if (tooltipItems.datasetIndex === 0) {
-                if (index == minIndex) {
-                  icon = minIcon;
-                } else if (index == maxIndex) {
-                  icon = maxIcon;
-                }
-              } else if (tooltipItems.datasetIndex === 1) {
-                if (index == minIndexNextDay) {
-                  icon = minIcon;
-                } else if (index == maxIndexNextDay) {
-                  icon = maxIcon;
-                }
+                const labelTitle = tooltipItem.dataset.label || '';
+                const label =
+                  labelTitle +
+                  ': ' +
+                  parseFloat(tooltipItem.raw).toFixed(5) +
+                  ' ' +
+                  that.pvpcHourlyPricingObj.attributes.unit_of_measurement +
+                  ' ';
+
+                return icon ? label + icon : label;
               }
-
-              const labelTitle = data.datasets[tooltipItems.datasetIndex].label || '';
-              const label =
-                labelTitle +
-                ': ' +
-                parseFloat(tooltipItems.value).toFixed(5) +
-                ' ' +
-                that.pvpcHourlyPricingObj.attributes.unit_of_measurement +
-                ' ';
-
-              return icon ? label + icon : label;
             }
+          },
+          filler: {
+            propagate: true
+          },
+          legend: {
+            display: true,
+            labels: {
+              usePointStyle: true
+            }
+          }
+        },
+        elements: {
+          line: {
+            tension: 0.1,
+            borderWidth: 1.5
+          },
+          point: {
+            hitRadius: 0,
+            hoverRadius: 0
           }
         }
       }
@@ -526,13 +486,12 @@ class PVPCHourlyPricingCard extends LitElement {
     if (hasNextDayData) {
       chartOptions.data.datasets.push({
         label: that.getDateString(today.setDate(today.getDate() + 1)),
-        type: 'line',
         data: this.despiction.pricesNextDay,
-        borderWidth: 2.0,
-        pointRadius: 0.0,
-        pointHitRadius: 0.0,
+        pointRadius: 0,
+        borderColor: tomorrowColor,
+        backgroundColor: tomorrowColor + '7F',
         fill: false,
-        steppedLine: true
+        stepped: 'before'
       });
     }
 
@@ -540,6 +499,8 @@ class PVPCHourlyPricingCard extends LitElement {
   }
 
   getDespiction(attributes) {
+    const today = new Date();
+
     const priceRegex = /price_\d\dh/;
     const priceNextDayRegex = /price_(next|last)_day_\d\dh/;
 
@@ -556,12 +517,12 @@ class PVPCHourlyPricingCard extends LitElement {
     let pricesNextDay = [];
 
     for (let index = 0; index < 24; index++) {
-      dateTime.push(new Date().setHours(index, 0));
+      dateTime.push(new Date(today.setHours(index, 0)));
       prices.push(priceArray[index]);
       pricesNextDay.push(priceNextDayArray[index]);
     }
 
-    dateTime.push(new Date().setHours(24, 0));
+    dateTime.push(new Date(today.setHours(24, 0)));
     prices.push(priceArray[23]);
     pricesNextDay.push(priceNextDayArray[23]);
 
@@ -569,10 +530,10 @@ class PVPCHourlyPricingCard extends LitElement {
     data.prices = prices;
     data.pricesNextDay = pricesNextDay;
 
-    data.minPrice = Math.min.apply(null, prices);
-    data.maxPrice = Math.max.apply(null, prices);
-    data.minIndex = prices.indexOf(data.minPrice);
-    data.maxIndex = prices.indexOf(data.maxPrice);
+    data.minPrice = attributes.min_price;
+    data.maxPrice = attributes.max_price;
+    data.minIndex = attributes.min_price_at;
+    data.maxIndex = attributes.max_price_at;
     data.minPriceNextDay = Math.min.apply(null, pricesNextDay);
     data.maxPriceNextDay = Math.max.apply(null, pricesNextDay);
     data.minIndexNextDay = pricesNextDay.indexOf(data.minPriceNextDay);
@@ -581,42 +542,12 @@ class PVPCHourlyPricingCard extends LitElement {
     return data;
   }
 
-  getTariffPeriod() {
-    let period;
-    var now = new Date();
-    var hour = now.getHours();
-    var dayOfWeek = now.getDay();
-    if (hour < 8 || dayOfWeek == 6 || dayOfWeek == 0 || this.isFestive(now)) {
-      period = 'valley';
-    } else if ((hour >= 10 && hour < 14) || (hour >= 18 && hour < 22)) {
-      period = 'peak';
-    } else {
-      period = 'plain';
-    }
-    return period;
-  }
-
-  isFestive(datetime) {
-    return festives.indexOf(this.formatDate(datetime)) > -1;
-  }
-
-  formatDate(datetime) {
-    let day = datetime.getDate();
-    let month = datetime.getMonth() + 1;
-
-    return day.toString().padStart(2, 0) + '-' + month.toString().padStart(2, 0);
-  }
-
   getDateString(datetime) {
     return new Date(datetime).toLocaleDateString(this.lang, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
     });
-  }
-
-  getHourString(datetime) {
-    return new Date(datetime).toLocaleTimeString(this.lang, { hour: '2-digit', hour12: false });
   }
 
   getTimeString(datetime) {

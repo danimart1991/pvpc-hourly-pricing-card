@@ -530,10 +530,10 @@ class PVPCHourlyPricingCard extends LitElement {
     data.prices = prices;
     data.pricesNextDay = pricesNextDay;
 
-    data.minPrice = attributes.min_price;
-    data.maxPrice = attributes.max_price;
-    data.minIndex = attributes.min_price_at;
-    data.maxIndex = attributes.max_price_at;
+    data.minPrice = Math.min.apply(null, prices);
+    data.maxPrice = Math.max.apply(null, prices);
+    data.minIndex = prices.indexOf(data.minPrice);
+    data.maxIndex = prices.indexOf(data.maxPrice);
     data.minPriceNextDay = Math.min.apply(null, pricesNextDay);
     data.maxPriceNextDay = Math.max.apply(null, pricesNextDay);
     data.minIndexNextDay = pricesNextDay.indexOf(data.minPriceNextDay);

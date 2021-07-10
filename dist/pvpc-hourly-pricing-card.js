@@ -314,8 +314,8 @@ class PVPCHourlyPricingCard extends LitElement {
 
     const style = getComputedStyle(document.body);
     const selectionColor = style.getPropertyValue('--secondary-text-color');
-    const todayColor = style.getPropertyValue('--primary-color');
-    const tomorrowColor = style.getPropertyValue('--accent-color');
+    const todayColor = '#377eb8';
+    const tomorrowColor = '#ff7f00';
     const today = new Date();
     const minIndex = this.despiction.minIndex;
     const maxIndex = this.despiction.maxIndex;

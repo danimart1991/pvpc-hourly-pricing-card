@@ -11,7 +11,13 @@ const locale = {
     maxPriceNextDay: 'Maksimal pris i morgen:',
     infoNoNextDay: 'Morgendagens data er endnu ikke tilgængelige',
     from: 'fra',
-    to: 'til'
+    to: 'til',
+    optionName: 'Navn (valgfrit)',
+    optionEntity: 'Enhed (påkrævet)',
+    optionShowCurrent: 'Vis nuværende status',
+    optionShowDetails: 'Vis detaljer',
+    optionShowGraph: 'Vis graf',
+    optionShowInfo: 'Vis information'
   },
   de: {
     minPrice: 'Mindestpreis heute:',
@@ -20,7 +26,13 @@ const locale = {
     maxPriceNextDay: 'Maximaler preis morgen:',
     infoNoNextDay: 'Die Daten von morgen sind noch nicht verfügbar',
     from: 'von',
-    to: 'bis'
+    to: 'bis',
+    optionName: 'Name (optional)',
+    optionEntity: 'Entity (Erforderlich)',
+    optionShowCurrent: 'Aktuellen Status anzeigen',
+    optionShowDetails: 'Details anzeigen',
+    optionShowGraph: 'Grafik anzeigen',
+    optionShowInfo: 'Informationen anzeigen'
   },
   en: {
     minPrice: 'Lowest price today:',
@@ -29,7 +41,13 @@ const locale = {
     maxPriceNextDay: 'Highest price tomorrow:',
     infoNoNextDay: "Tomorrow's data is not yet available",
     from: 'from',
-    to: 'to'
+    to: 'to',
+    optionName: 'Name (Optional)',
+    optionEntity: 'Entity (Required)',
+    optionShowCurrent: 'Show Current State',
+    optionShowDetails: 'Show Details',
+    optionShowGraph: 'Show Graph',
+    optionShowInfo: 'Show Info'
   },
   es: {
     minPrice: 'Precio mínimo hoy:',
@@ -38,7 +56,13 @@ const locale = {
     maxPriceNextDay: 'Precio máximo mañana:',
     infoNoNextDay: 'Los datos de mañana no están disponibles aún',
     from: 'de',
-    to: 'a'
+    to: 'a',
+    optionName: 'Nombre (Opcional)',
+    optionEntity: 'Entidad (Necesario)',
+    optionShowCurrent: 'Mostrar Estado Actual',
+    optionShowDetails: 'Mostrar Detalles',
+    optionShowGraph: 'Mostrar Gráfico',
+    optionShowInfo: 'Mostrar Información'
   },
   fr: {
     minPrice: "Prix minimum aujourd'hui:",
@@ -47,7 +71,13 @@ const locale = {
     maxPriceNextDay: 'Prix maximum demain:',
     infoNoNextDay: 'Les données de demain ne sont pas encore disponibles',
     from: 'de',
-    to: 'à'
+    to: 'à',
+    optionName: 'Nom (Facultatif)',
+    optionEntity: 'Entity (Required)',
+    optionShowCurrent: "Afficher l'état actuel",
+    optionShowDetails: 'Afficher les détails',
+    optionShowGraph: 'Afficher le graphique',
+    optionShowInfo: 'Afficher les informations'
   },
   nl: {
     minPrice: 'Minimumspris i dag:',
@@ -56,7 +86,13 @@ const locale = {
     maxPriceNextDay: 'Maximale prijs morgen:',
     infoNoNextDay: 'De gegevens van morgen zijn nog niet beschikbaar',
     from: 'fra',
-    to: 'til'
+    to: 'til',
+    optionName: 'Naam (optioneel)',
+    optionEntity: 'Entiteit (vereist)',
+    optionShowCurrent: 'Toon huidige status',
+    optionShowDetails: 'Details weergeven',
+    optionShowGraph: 'Show Graph',
+    optionShowInfo: 'Informatie weergeven'
   },
   ru: {
     minPrice: 'Минимальная цена сегодня:',
@@ -65,7 +101,13 @@ const locale = {
     maxPriceNextDay: 'Максимальная цена завтра:',
     infoNoNextDay: 'Данные завтра еще не доступны',
     from: 'С',
-    to: 'до'
+    to: 'до',
+    optionName: 'Имя (необязательно)',
+    optionEntity: 'Entity (обязательно)',
+    optionShowCurrent: 'Показать текущий статус',
+    optionShowDetails: 'Показать детали',
+    optionShowGraph: 'Показать график',
+    optionShowInfo: 'Показать информацию'
   },
   sv: {
     minPrice: 'Lägsta pris idag:',
@@ -74,7 +116,13 @@ const locale = {
     maxPriceNextDay: 'Maxpris i morgon:',
     infoNoNextDay: 'Morgondagens data är ännu inte tillgängliga',
     from: '',
-    to: 'till'
+    to: 'till',
+    optionName: 'Namn (valfritt)',
+    optionEntity: 'Enhet (obligatoriskt)',
+    optionShowCurrent: 'Visa aktuell status',
+    optionShowDetails: 'Visa detaljer',
+    optionShowGraph: 'Visa graf',
+    optionShowInfo: 'Visa information'
   }
 };
 
@@ -127,8 +175,7 @@ class PVPCHourlyPricingCard extends LitElement {
     };
   }
 
-  static async getConfigElement() {
-    await import('./pvpc-hourly-pricing-card-editor.js');
+  static getConfigElement() {
     return document.createElement('pvpc-hourly-pricing-card-editor');
   }
 
@@ -662,3 +709,162 @@ class PVPCHourlyPricingCard extends LitElement {
 }
 
 customElements.define('pvpc-hourly-pricing-card', PVPCHourlyPricingCard);
+
+export class PVPCHourlyPricingCardEditor extends LitElement {
+  setConfig(config) {
+    this._config = { ...config };
+  }
+
+  static get properties() {
+    return { hass: {}, _config: {} };
+  }
+
+  get _entity() {
+    return this._config.entity || '';
+  }
+
+  get _name() {
+    return this._config.name || '';
+  }
+
+  get _current() {
+    return this._config.current !== false;
+  }
+
+  get _details() {
+    return this._config.details !== false;
+  }
+
+  get _graph() {
+    return this._config.graph !== false;
+  }
+
+  get _info() {
+    return this._config.info !== false;
+  }
+
+  render() {
+    if (!this.hass) {
+      return html``;
+    }
+
+    this.lang = this.hass.selectedLanguage || this.hass.language;
+
+    const entities = Object.keys(this.hass.states).filter((eid) =>
+      Object.keys(this.hass.states[eid].attributes).some((aid) => aid == 'min_price_at')
+    );
+
+    return html`
+      <div class="card-config">
+        <div class="side-by-side">
+          <paper-input
+            label="${this.ll('optionName')}"
+            .value="${this._name}"
+            .configValue="${'name'}"
+            @value-changed="${this._valueChanged}"
+          >
+          </paper-input>
+        </div>
+        <div class="side-by-side">
+          <paper-dropdown-menu
+            label="${this.ll('optionEntity')}"
+            @value-changed="${this._valueChanged}"
+            .configValue="${'entity'}"
+          >
+            <paper-listbox slot="dropdown-content" .selected="${entities.indexOf(this._entity)}">
+              ${entities.map((entity) => {
+                return html` <paper-item>${entity}</paper-item> `;
+              })}
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </div>
+        <div class="side-by-side">
+          <div>
+            <ha-switch
+              .checked=${this._current}
+              .configValue="${'current'}"
+              @change="${this._valueChanged}"
+            ></ha-switch>
+            <label class="mdc-label">${this.ll('optionShowCurrent')}</label>
+          </div>
+          <div>
+            <ha-switch
+              .checked=${this._details}
+              .configValue="${'details'}"
+              @change="${this._valueChanged}"
+            ></ha-switch>
+            <label class="mdc-label">${this.ll('optionShowDetails')}</label>
+          </div>
+        </div>
+        <div class="side-by-side">
+          <div>
+            <ha-switch .checked=${this._graph} .configValue="${'graph'}" @change="${this._valueChanged}"></ha-switch>
+            <label class="mdc-label">${this.ll('optionShowGraph')}</label>
+          </div>
+          <div>
+            <ha-switch .checked=${this._info} .configValue="${'info'}" @change="${this._valueChanged}"></ha-switch>
+            <label class="mdc-label">${this.ll('optionShowInfo')}</label>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  _valueChanged(ev) {
+    if (!this._config || !this.hass) {
+      return;
+    }
+
+    const target = ev.target;
+    if (this[`_${target.configValue}`] === target.value) {
+      return;
+    }
+
+    if (target.configValue) {
+      if (target.value === '') {
+        delete this._config[target.configValue];
+      } else {
+        this._config = {
+          ...this._config,
+          [target.configValue]: target.checked !== undefined ? target.checked : target.value
+        };
+      }
+    }
+
+    fireEvent(this, 'config-changed', { config: this._config });
+  }
+
+  ll(str) {
+    if (locale[this.lang] === undefined) return locale.en[str];
+    return locale[this.lang][str];
+  }
+
+  static get styles() {
+    return css`
+      ha-switch {
+        padding-top: 16px;
+      }
+      .mdc-label {
+        margin-left: 12px;
+        vertical-align: text-bottom;
+      }
+      .side-by-side {
+        display: flex;
+      }
+      .side-by-side > * {
+        flex: 1;
+        padding-right: 4px;
+      }
+    `;
+  }
+}
+
+customElements.define('pvpc-hourly-pricing-card-editor', PVPCHourlyPricingCardEditor);
+
+window.customCards = window.customCards || [];
+window.customCards.push({
+  type: 'pvpc-hourly-pricing-card',
+  name: 'PVPC Hourly Pricing',
+  preview: true,
+  description: 'The PVPC Hourly Pricing card allows you to display propertly the PVPC Hourly Pricing entity.'
+});

@@ -10,7 +10,7 @@
 
 Home Assistant Lovelace custom card to use with [Spain electricity hourly pricing (PVPC) integration](https://www.home-assistant.io/integrations/pvpc_hourly_pricing/).
 
-![Card Example](https://raw.githubusercontent.com/danimart1991/pvpc-hourly-pricing-card/master/docs/images/card-example.jpg)
+![Card Example](https://raw.githubusercontent.com/danimart1991/pvpc-hourly-pricing-card/master/docs/images/card-example.png)
 
 > This card only works with a [previously configured Spain electricity hourly pricing (PVPC) integration](https://www.danielmartingonzalez.com/en/pvpc-tariff-prices-in-home-assistant/) in Home Assistant.
 
@@ -31,13 +31,13 @@ You could use [HACS](https://hacs.xyz/) or follow this [guide](https://www.danie
 
 ```yaml
 resources:
-  url: /local/pvpc-hourly-pricing-card.js?v=1.2.4
+  url: /local/pvpc-hourly-pricing-card.js?v=1.5.0
   type: module
 ```
 
 ## Options
 
-![Card Options](https://raw.githubusercontent.com/danimart1991/pvpc-hourly-pricing-card/master/docs/images/card-options.jpg)
+![Card Options](https://raw.githubusercontent.com/danimart1991/pvpc-hourly-pricing-card/master/docs/images/card-options.png)
 
 | Name | Type | Default | Requirement | Description |
 | --- | --- | --- | --- | --- |
@@ -55,7 +55,7 @@ resources:
 
 From your Lovelace Dashboard: *Configure UI ➡ Add New Card ➡ PVPC Hourly Pricing Card*. Configure the card:
 
-![Card Editor](https://raw.githubusercontent.com/danimart1991/pvpc-hourly-pricing-card/master/docs/images/card-editor.jpg)
+![Card Editor](https://raw.githubusercontent.com/danimart1991/pvpc-hourly-pricing-card/master/docs/images/card-editor.png)
 
 If this doesn't work, another option is to add it manually from your Lovelace Dashboard: *Configure UI ➡ Add New Card ➡ Manual Card* and then this code:
 

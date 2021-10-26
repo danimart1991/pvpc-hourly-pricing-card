@@ -4,6 +4,21 @@ const LitElement =
 const { html, css } = LitElement.prototype;
 
 const locale = {
+  ca: {
+    minPrice: 'Preu mínim avui:',
+    maxPrice: 'Preu màxim avui:',
+    minPriceNextDay: 'Preu mínim demà:',
+    maxPriceNextDay: 'Preu màxim demà:',
+    infoNoNextDay: 'Les dades de demà encara no estan disponibles',
+    from: 'de',
+    to: 'a',
+    optionName: 'Nom (Opcional)',
+    optionEntity: 'Entitat (Necessari)',
+    optionShowCurrent: 'Mostrar Estat Actual',
+    optionShowDetails: 'Mostrar Detalls',
+    optionShowGraph: 'Mostrar Gràfic',
+    optionShowInfo: 'Mostrar Informació'
+  },
   da: {
     minPrice: 'Minimumspris i dag:',
     maxPrice: 'Maksimal pris i dag:',

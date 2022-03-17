@@ -13,11 +13,13 @@ const locale = {
     from: 'de',
     to: 'a',
     optionName: 'Nom (Opcional)',
-    optionEntity: 'Entitat (Necessari)',
+    optionEntity: 'Entitat PVPC (Necessari)',
     optionShowCurrent: 'Mostrar Estat Actual',
     optionShowDetails: 'Mostrar Detalls',
     optionShowGraph: 'Mostrar Gràfic',
-    optionShowInfo: 'Mostrar Informació'
+    optionShowInfo: 'Mostrar Informació',
+    optionInjection: 'Entitat preu injecció (Opcional)',
+    injectionLabel: 'Excedents'
   },
   da: {
     minPrice: 'Minimumspris i dag:',
@@ -62,7 +64,9 @@ const locale = {
     optionShowCurrent: 'Show Current State',
     optionShowDetails: 'Show Details',
     optionShowGraph: 'Show Graph',
-    optionShowInfo: 'Show Info'
+    optionShowInfo: 'Show Info',
+    optionInjection: 'Injection entity (Opcional)',
+    injectionLabel: 'Surplus'
   },
   es: {
     minPrice: 'Precio mínimo hoy:',
@@ -77,7 +81,9 @@ const locale = {
     optionShowCurrent: 'Mostrar Estado Actual',
     optionShowDetails: 'Mostrar Detalles',
     optionShowGraph: 'Mostrar Gráfico',
-    optionShowInfo: 'Mostrar Información'
+    optionShowInfo: 'Mostrar Información',
+    optionInjection: 'Entidad precio inyección (Opcional)',
+    injectionLabel: 'Excedentes'
   },
   fr: {
     minPrice: "Prix minimum aujourd'hui:",
@@ -218,6 +224,11 @@ class PVPCHourlyPricingCard extends LitElement {
     if (!this.pvpcHourlyPricingObj) return;
 
     this.despiction = this.getDespiction(this.pvpcHourlyPricingObj.attributes);
+
+    this.setInjectionHourlyPricingObj = this._config.injection in this.hass.states ? this.hass.states[this._config.injection] : null;
+    if (!this.setInjectionHourlyPricingObj) return;
+
+    this.despictionInjection = this.getDespiction(this.setInjectionHourlyPricingObj.attributes);
   }
 
   shouldUpdate(changedProps) {
@@ -556,6 +567,31 @@ class PVPCHourlyPricingCard extends LitElement {
         stepped: 'before'
       });
     }
+    
+    if (this.despictionInjection) {
+        chartOptions.data.datasets.push({
+          label: this.ll('injectionLabel'),
+          data: this.despictionInjection.prices,
+          pointRadius: 0,
+          borderColor: todayColor,
+          backgroundColor: todayColor + '7F',
+          fill: false,
+          stepped: 'before',
+          borderDash: [4, 4]
+        });
+        if (hasNextDayData) {
+          chartOptions.data.datasets.push({
+            label: this.ll('injectionLabel'),
+            data: this.despictionInjection.pricesNextDay,
+            pointRadius: 0,
+            borderColor: tomorrowColor,
+            backgroundColor: tomorrowColor + '7F',
+            fill: false,
+            stepped: 'before',
+            borderDash: [4, 4]
+          });
+        }
+    }
 
     this.ChartData = chartOptions;
   }
@@ -737,6 +773,10 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
   get _entity() {
     return this._config.entity || '';
   }
+  
+  get _injection() {
+    return this._config.injection || '';
+  }
 
   get _name() {
     return this._config.name || '';
@@ -787,6 +827,19 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
             .configValue="${'entity'}"
           >
             <paper-listbox slot="dropdown-content" .selected="${entities.indexOf(this._entity)}">
+              ${entities.map((entity) => {
+                return html` <paper-item>${entity}</paper-item> `;
+              })}
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </div>
+        <div class="side-by-side">
+          <paper-dropdown-menu
+            label="${this.ll('optionInjection')}"
+            @value-changed="${this._valueChanged}"
+            .configValue="${'injection'}"
+          >
+            <paper-listbox slot="dropdown-content" .selected="${entities.indexOf(this._injection)}">
               ${entities.map((entity) => {
                 return html` <paper-item>${entity}</paper-item> `;
               })}

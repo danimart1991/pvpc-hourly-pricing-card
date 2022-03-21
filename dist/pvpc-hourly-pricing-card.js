@@ -109,6 +109,21 @@ const locale = {
     optionShowGraph: 'Show Graph',
     optionShowInfo: 'Informatie weergeven'
   },
+  pt: {
+    minPrice: 'Preço mínimo hoje:',
+    maxPrice: 'Preço máximo hoje:',
+    minPriceNextDay: 'Preço mínimo amanhã:',
+    maxPriceNextDay: 'Preço máximo amanhã:',
+    infoNoNextDay: 'Os dados de amanhã ainda não estão disponíveis',
+    from: 'de',
+    to: 'a',
+    optionName: 'Nome (Opcional)',
+    optionEntity: 'Entidade (Obrigatório)',
+    optionShowCurrent: 'Mostrar Estado Actual',
+    optionShowDetails: 'Mostrar Detalhes',
+    optionShowGraph: 'Mostrar Gráfico',
+    optionShowInfo: 'Mostrar Informação'
+  },
   ru: {
     minPrice: 'Минимальная цена сегодня:',
     maxPrice: 'Максимальная цена сегодня:',

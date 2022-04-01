@@ -211,7 +211,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
   static getStubConfig(hass, entities, entitiesFallback) {
     const entity = Object.keys(hass.states).find((eid) =>
-      Object.keys(hass.states[eid].attributes).some((aid) => aid == 'min_price_at')
+      Object.keys(hass.states[eid].attributes).some((aid) => aid == 'attribution')
     );
     return { entity: entity };
   }
@@ -781,7 +781,7 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
     this.lang = this.hass.selectedLanguage || this.hass.language;
 
     const entities = Object.keys(this.hass.states).filter((eid) =>
-      Object.keys(this.hass.states[eid].attributes).some((aid) => aid == 'min_price_at')
+      Object.keys(this.hass.states[eid].attributes).some((aid) => aid == 'attribution')
     );
 
     return html`

@@ -115,6 +115,21 @@ const locale = {
     optionShowGraph: 'Show Graph',
     optionShowInfo: 'Informatie weergeven'
   },
+  pt: {
+    minPrice: 'Preço mínimo hoje:',
+    maxPrice: 'Preço máximo hoje:',
+    minPriceNextDay: 'Preço mínimo amanhã:',
+    maxPriceNextDay: 'Preço máximo amanhã:',
+    infoNoNextDay: 'Os dados de amanhã ainda não estão disponíveis',
+    from: 'das',
+    to: 'às',
+    optionName: 'Nome (Opcional)',
+    optionEntity: 'Entidade (Obrigatório)',
+    optionShowCurrent: 'Mostrar Estado Actual',
+    optionShowDetails: 'Mostrar Detalhes',
+    optionShowGraph: 'Mostrar Gráfico',
+    optionShowInfo: 'Mostrar Informação'
+  },
   ru: {
     minPrice: 'Минимальная цена сегодня:',
     maxPrice: 'Максимальная цена сегодня:',
@@ -202,7 +217,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
   static getStubConfig(hass, entities, entitiesFallback) {
     const entity = Object.keys(hass.states).find((eid) =>
-      Object.keys(hass.states[eid].attributes).some((aid) => aid == 'min_price_at')
+      Object.keys(hass.states[eid].attributes).some((aid) => aid == 'attribution')
     );
     return { entity: entity };
   }
@@ -806,7 +821,7 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
     this.lang = this.hass.selectedLanguage || this.hass.language;
 
     const entities = Object.keys(this.hass.states).filter((eid) =>
-      Object.keys(this.hass.states[eid].attributes).some((aid) => aid == 'min_price_at')
+      Object.keys(this.hass.states[eid].attributes).some((aid) => aid == 'attribution')
     );
 
     return html`

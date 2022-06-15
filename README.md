@@ -1,3 +1,5 @@
+# PVPC Hourly Pricing Card
+
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/danimart1991/pvpc-hourly-pricing-card)
 ![GitHub last commit](https://img.shields.io/github/last-commit/danimart1991/pvpc-hourly-pricing-card)
 ![License](https://img.shields.io/github/license/danimart1991/pvpc-hourly-pricing-card.svg)
@@ -5,8 +7,6 @@
 
 [![Tip Me via PayPal](https://img.shields.io/badge/PayPal-tip%20me-blue.svg?logo=paypal&style=flat)](https://www.paypal.me/danimart1991)
 [![Sponsor Me via GitHub](https://img.shields.io/badge/GitHub-sponsor%20me-blue.svg?logo=github&style=flat)](https://github.com/sponsors/danimart1991)
-
-# PVPC Hourly Pricing Card
 
 Home Assistant Lovelace custom card to use with [Spain electricity hourly pricing (PVPC) integration](https://www.home-assistant.io/integrations/pvpc_hourly_pricing/).
 
@@ -31,7 +31,7 @@ You could use [HACS](https://hacs.xyz/) or follow this [guide](https://www.danie
 
 ```yaml
 resources:
-  url: /local/pvpc-hourly-pricing-card.js?v=1.5.1
+  url: /local/pvpc-hourly-pricing-card.js?v=1.6.0
   type: module
 ```
 
@@ -61,8 +61,8 @@ If this doesn't work, another option is to add it manually from your Lovelace Da
 
 ```yaml
 type: custom:pvpc-hourly-pricing-card
-name: "PVPC 2.0 DHA"
-entity: sensor.pvpc_2_0_dha
+name: "PVPC 2.0 DT"
+entity: sensor.pvpc_2_0_dt
 ```
 
 ### Mode YAML
@@ -74,7 +74,7 @@ Add this lines of code to your Lovelace Dashboard YAML file:
 cards:
   ...
   - type: custom:pvpc-hourly-pricing-card
-    name: "PVPC 2.0 DHA"
-    entity: sensor.pvpc_2_0_dha
+    name: "PVPC 2.0 DT"
+    entity: sensor.pvpc_2_0_dt
   ...
 ```

@@ -274,11 +274,16 @@ class PVPCHourlyPricingCard extends LitElement {
     }
 
     return html`
-      <ha-card header="${this._config.name ? this._config.name : ''}">
-        ${this._config.current !== false ? this.renderCurrent() : ''}
-        ${this._config.details !== false ? this.renderDetails() : ''}
-        ${this._config.graph !== false ? this.renderGraph() : ''}
-        ${this._config.info !== false ? this.renderInfo() : ''}
+      <ha-card>
+        <h1 class="card-header">
+          <div class="name">${this._config.name ? this._config.name : ''}</div>
+        </h1>
+        <div class="card-content">
+          ${this._config.current !== false ? this.renderCurrent() : ''}
+          ${this._config.details !== false ? this.renderDetails() : ''}
+          ${this._config.graph !== false ? this.renderGraph() : ''}
+          ${this._config.info !== false ? this.renderInfo() : ''}
+        </div>
       </ha-card>
     `;
   }
@@ -645,15 +650,6 @@ class PVPCHourlyPricingCard extends LitElement {
 
   static get styles() {
     return css`
-      ha-card {
-        margin: auto;
-        padding-top: 1.3em;
-        padding-bottom: 1.3em;
-        padding-left: 1em;
-        padding-right: 1em;
-        position: relative;
-      }
-
       ha-icon {
         color: var(--paper-item-icon-color);
       }

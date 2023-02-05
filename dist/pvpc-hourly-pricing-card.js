@@ -341,7 +341,7 @@ class PVPCHourlyPricingCard extends LitElement {
           ${this.ll('from')} ${maxPriceFrom} ${this.ll('to')} ${maxPriceTo}
         </li>
         ${this.despiction.minPriceNextDay
-          ? html` <li>
+        ? html` <li>
                 <ha-icon icon="mdi:thumb-up-outline"></ha-icon>
                 ${this.ll('minPriceNextDay')}
                 ${minPriceNextDay}${this.pvpcHourlyPricingObj.attributes.unit_of_measurement} ${this.ll('from')}
@@ -353,7 +353,7 @@ class PVPCHourlyPricingCard extends LitElement {
                 ${maxPriceNextDay}${this.pvpcHourlyPricingObj.attributes.unit_of_measurement} ${this.ll('from')}
                 ${maxPriceFromNextDay} ${this.ll('to')} ${maxPriceToNextDay}
               </li>`
-          : ''}
+        : ''}
       </ul>
     `;
   }
@@ -777,10 +777,6 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
 
     this.lang = this.hass.selectedLanguage || this.hass.language;
 
-    const entities = Object.keys(this.hass.states).filter((eid) =>
-      Object.keys(this.hass.states[eid].attributes).some((aid) => aid == 'attribution')
-    );
-
     return html`
       <div class="card-config">
         <div class="side-by-side">
@@ -793,17 +789,25 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
           </paper-input>
         </div>
         <div class="side-by-side">
-          <paper-dropdown-menu
-            label="${this.ll('optionEntity')}"
-            @value-changed="${this._valueChanged}"
-            .configValue="${'entity'}"
-          >
-            <paper-listbox slot="dropdown-content" .selected="${entities.indexOf(this._entity)}">
-              ${entities.map((entity) => {
-                return html` <paper-item>${entity}</paper-item> `;
-              })}
-            </paper-listbox>
-          </paper-dropdown-menu>
+        ${customElements.get("ha-entity-picker")
+        ? html`
+                  <ha-entity-picker
+                    .hass="${this.hass}"
+                    .value="${this._entity}"
+                    .configValue=${"entity"}
+                    @change="${this._valueChanged}"
+                    allow-custom-entity
+                  ></ha-entity-picker>
+                `
+        : html`
+                  <paper-input
+                    label="${this.ll('optionEntity')}"
+                    .value="${this._entity}"
+                    .configValue="${"entity"}"
+                    @value-changed="${this._valueChanged}"
+                  ></paper-input>
+                `
+      }
         </div>
         <div class="side-by-side">
           <div>

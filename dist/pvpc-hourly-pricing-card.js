@@ -243,6 +243,7 @@ class PVPCHourlyPricingCard extends LitElement {
     this.setPVPCHourlyPricingObj();
     let chart = this.shadowRoot.getElementById('Chart');
     if (chart) {
+      chart.hass = this.hass;
       chart.type = this.ChartData.type;
       chart.data = this.ChartData.data;
       chart.options = this.ChartData.options;

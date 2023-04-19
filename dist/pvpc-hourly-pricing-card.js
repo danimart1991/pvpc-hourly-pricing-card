@@ -35,10 +35,10 @@ const locale = {
     optionShowInfo: 'Vis information'
   },
   de: {
-    minPrice: 'Mindestpreis heute:',
-    maxPrice: 'Maximaler preis heute:',
-    minPriceNextDay: 'Mindestpreis morgen:',
-    maxPriceNextDay: 'Maximaler preis morgen:',
+    minPrice: 'Minimalpreis heute:',
+    maxPrice: 'Maximalpreis heute:',
+    minPriceNextDay: 'Minimalpreis morgen:',
+    maxPriceNextDay: 'Maximalpreis morgen:',
     infoNoNextDay: 'Die Daten von morgen sind noch nicht verfügbar',
     from: 'von',
     to: 'bis',

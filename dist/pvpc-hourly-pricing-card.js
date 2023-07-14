@@ -475,7 +475,8 @@ class PVPCHourlyPricingCard extends LitElement {
             type: 'time',
             adapters: {
               date: {
-                locale: this.hass.locale
+                locale: this.hass.locale,
+                config: this.hass.config,
               }
             },
             ticks: {

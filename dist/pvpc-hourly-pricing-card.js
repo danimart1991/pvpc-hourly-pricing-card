@@ -12,6 +12,7 @@ const locale = {
     infoNoNextDay: 'Les dades de demà encara no estan disponibles',
     from: 'de',
     to: 'a',
+    optionBaselineZero: 'Línia base zero',
     optionName: 'Nom (Opcional)',
     optionEntity: 'Entitat (Necessari)',
     optionShowCurrent: 'Mostrar Estat Actual',
@@ -27,6 +28,7 @@ const locale = {
     infoNoNextDay: 'Morgendagens data er endnu ikke tilgængelige',
     from: 'fra',
     to: 'til',
+    optionBaselineZero: 'Nul baseline',
     optionName: 'Navn (valgfrit)',
     optionEntity: 'Enhed (påkrævet)',
     optionShowCurrent: 'Vis nuværende status',
@@ -42,6 +44,7 @@ const locale = {
     infoNoNextDay: 'Die Daten von morgen sind noch nicht verfügbar',
     from: 'von',
     to: 'bis',
+    optionBaselineZero: 'Null-Basislinie',
     optionName: 'Name (optional)',
     optionEntity: 'Entity (Erforderlich)',
     optionShowCurrent: 'Aktuellen Status anzeigen',
@@ -57,6 +60,7 @@ const locale = {
     infoNoNextDay: "Tomorrow's data is not yet available",
     from: 'from',
     to: 'to',
+    optionBaselineZero: 'Baseline zero',
     optionName: 'Name (Optional)',
     optionEntity: 'Entity (Required)',
     optionShowCurrent: 'Show Current State',
@@ -72,6 +76,7 @@ const locale = {
     infoNoNextDay: 'Los datos de mañana no están disponibles aún',
     from: 'de',
     to: 'a',
+    optionBaselineZero: 'Línea base cero',
     optionName: 'Nombre (Opcional)',
     optionEntity: 'Entidad (Necesario)',
     optionShowCurrent: 'Mostrar Estado Actual',
@@ -87,6 +92,7 @@ const locale = {
     infoNoNextDay: 'Les données de demain ne sont pas encore disponibles',
     from: 'de',
     to: 'à',
+    optionBaselineZero: 'Référence zéro',
     optionName: 'Nom (Facultatif)',
     optionEntity: 'Entity (Required)',
     optionShowCurrent: "Afficher l'état actuel",
@@ -102,6 +108,7 @@ const locale = {
     infoNoNextDay: 'De gegevens van morgen zijn nog niet beschikbaar',
     from: 'fra',
     to: 'til',
+    optionBaselineZero: 'Nul basislijn',
     optionName: 'Naam (optioneel)',
     optionEntity: 'Entiteit (vereist)',
     optionShowCurrent: 'Toon huidige status',
@@ -117,6 +124,7 @@ const locale = {
     infoNoNextDay: 'Os dados de amanhã ainda não estão disponíveis',
     from: 'das',
     to: 'às',
+    optionBaselineZero: 'Linha de base zero',
     optionName: 'Nome (Opcional)',
     optionEntity: 'Entidade (Obrigatório)',
     optionShowCurrent: 'Mostrar Estado Actual',
@@ -132,6 +140,7 @@ const locale = {
     infoNoNextDay: 'Данные завтра еще не доступны',
     from: 'С',
     to: 'до',
+    optionBaselineZero: 'Нулевая базовая линия',
     optionName: 'Имя (необязательно)',
     optionEntity: 'Entity (обязательно)',
     optionShowCurrent: 'Показать текущий статус',
@@ -147,6 +156,7 @@ const locale = {
     infoNoNextDay: 'Morgondagens data är ännu inte tillgängliga',
     from: '',
     to: 'till',
+    optionBaselineZero: 'Noll baslinje',
     optionName: 'Namn (valfritt)',
     optionEntity: 'Enhet (obligatoriskt)',
     optionShowCurrent: 'Visa aktuell status',
@@ -341,7 +351,7 @@ class PVPCHourlyPricingCard extends LitElement {
           ${this.ll('from')} ${maxPriceFrom} ${this.ll('to')} ${maxPriceTo}
         </li>
         ${this.despiction.minPriceNextDay
-        ? html` <li>
+          ? html` <li>
                 <ha-icon icon="mdi:thumb-up-outline"></ha-icon>
                 ${this.ll('minPriceNextDay')}
                 ${minPriceNextDay}${this.pvpcHourlyPricingObj.attributes.unit_of_measurement} ${this.ll('from')}
@@ -353,7 +363,7 @@ class PVPCHourlyPricingCard extends LitElement {
                 ${maxPriceNextDay}${this.pvpcHourlyPricingObj.attributes.unit_of_measurement} ${this.ll('from')}
                 ${maxPriceFromNextDay} ${this.ll('to')} ${maxPriceToNextDay}
               </li>`
-        : ''}
+          : ''}
       </ul>
     `;
   }
@@ -476,7 +486,7 @@ class PVPCHourlyPricingCard extends LitElement {
             adapters: {
               date: {
                 locale: this.hass.locale,
-                config: this.hass.config,
+                config: this.hass.config
               }
             },
             ticks: {
@@ -577,6 +587,10 @@ class PVPCHourlyPricingCard extends LitElement {
         fill: false,
         stepped: 'before'
       });
+    }
+
+    if (this._config.baseline_zero) {
+      chartOptions.options.scales.y.suggestedMin = 0;
     }
 
     this.ChartData = chartOptions;
@@ -771,6 +785,10 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
     return this._config.info !== false;
   }
 
+  get _baseline_zero() {
+    return this._config.baseline_zero == true;
+  }
+
   render() {
     if (!this.hass) {
       return html``;
@@ -838,6 +856,20 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
             <label class="mdc-label">${this.ll('optionShowInfo')}</label>
           </div>
         </div>
+        ${this._graph
+          ? html`
+              <div class="side-by-side">
+                <div>
+                  <ha-switch
+                    .checked=${this._baseline_zero}
+                    .configValue="${'baseline_zero'}"
+                    @change="${this._valueChanged}"
+                  ></ha-switch>
+                  <label class="mdc-label">${this.ll('optionBaselineZero')}</label>
+                </div>
+              </div>
+            `
+          : html``}
       </div>
     `;
   }

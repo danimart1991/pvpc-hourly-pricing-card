@@ -750,9 +750,6 @@ class PVPCHourlyPricingCard extends LitElement {
     return css`
       ha-card {
         height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
       }
 
       .card-header {

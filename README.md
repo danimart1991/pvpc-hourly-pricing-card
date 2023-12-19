@@ -31,7 +31,7 @@ You could use [HACS](https://hacs.xyz/) or follow this [guide](https://www.danie
 
 ```yaml
 resources:
-  url: /local/pvpc-hourly-pricing-card.js?v=1.12.0
+  url: /local/pvpc-hourly-pricing-card.js?v=1.13.0
   type: module
 ```
 

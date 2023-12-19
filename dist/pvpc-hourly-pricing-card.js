@@ -680,10 +680,10 @@ class PVPCHourlyPricingCard extends LitElement {
     const priceRegex = /price_\d\dh/;
     const priceNextDayRegex = /price_(next|last)_day_\d\dh/;
 
-    const priceArray = Object.keys(attributes)
+    const priceArray = Object.keys(attributes).sort()
       .filter((key) => priceRegex.test(key))
       .map((key) => attributes[key]);
-    const priceNextDayArray = Object.keys(attributes)
+    const priceNextDayArray = Object.keys(attributes).sort()
       .filter((key) => priceNextDayRegex.test(key))
       .map((key) => attributes[key]);
 

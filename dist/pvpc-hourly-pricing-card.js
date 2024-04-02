@@ -487,6 +487,7 @@ class PVPCHourlyPricingCard extends LitElement {
     const maxIndexNextDay = this.despiction.maxIndexNextDay;
     const hasNextDayData = this.despiction.pricesNextDay[0] !== undefined;
     const hasNextDayInjectionData =
+      this.despictionInjection &&
       this.despictionInjection.pricesNextDay[0] !== undefined;
     const minIcon = "▼";
     const maxIcon = "▲";

@@ -31,7 +31,7 @@ You could use [HACS](https://hacs.xyz/) or follow this [guide](https://www.danie
 
 ```yaml
 resources:
-  url: /local/pvpc-hourly-pricing-card.js?v=1.13.0
+  url: /local/pvpc-hourly-pricing-card.js?v=1.14.1
   type: module
 ```
 
@@ -39,26 +39,27 @@ resources:
 
 ![Card Options](https://raw.githubusercontent.com/danimart1991/pvpc-hourly-pricing-card/master/docs/images/card-options.png)
 
-| Name | Type | Default | Requirement | Description |
-| --- | --- | --- | --- | --- |
-| type | string | `null` | **Required** | `custom:pvpc-hourly-pricing-card` |
-| entity | string | `null` | **Required** | Spain electricity hourly pricing (PVPC) entity |
-| title | string | `null` | Optional | Title of the card |
-| show_current | boolean | `true` | Optional | Show the current price and pricing period |
-| show_details | boolean | `true` | Optional | Show the lowest and highest prices and hours for the current and next day |
-| show_graph | boolean | `true` | Optional | Show the graph with the prices for the current and next day |
-| show_info | boolean | `true` | Optional | Show info like '*Tomorrow's data is no yet available*' |
-| graph_baseline_zero | boolean | `false` | Optional | Show graph with desired minimum line base zero. |
+| Name                | Type    | Default | Requirement  | Description                                                               |
+| ------------------- | ------- | ------- | ------------ | ------------------------------------------------------------------------- |
+| type                | string  | `null`  | **Required** | `custom:pvpc-hourly-pricing-card`                                         |
+| entity              | string  | `null`  | **Required** | Spain electricity hourly pricing (PVPC) entity                            |
+| entity_injection    | string  | `null`  | Optional     | Spain electricity hourly injection pricing (Surplus) entity               |
+| title               | string  | `null`  | Optional     | Title of the card                                                         |
+| show_current        | boolean | `true`  | Optional     | Show the current price and pricing period                                 |
+| show_details        | boolean | `true`  | Optional     | Show the lowest and highest prices and hours for the current and next day |
+| show_graph          | boolean | `true`  | Optional     | Show the graph with the prices for the current and next day               |
+| show_info           | boolean | `true`  | Optional     | Show info like '_Tomorrow's data is no yet available_'                    |
+| graph_baseline_zero | boolean | `false` | Optional     | Show graph with desired minimum line base zero.                           |
 
 ## Example
 
 ### Mode Storage (Visual)
 
-From your Lovelace Dashboard: *Configure UI ➡ Add New Card ➡ PVPC Hourly Pricing Card*. Configure the card:
+From your Lovelace Dashboard: _Configure UI ➡ Add New Card ➡ PVPC Hourly Pricing Card_. Configure the card:
 
 ![Card Editor](https://raw.githubusercontent.com/danimart1991/pvpc-hourly-pricing-card/master/docs/images/card-editor.png)
 
-If this doesn't work, another option is to add it manually from your Lovelace Dashboard: *Configure UI ➡ Add New Card ➡ Manual Card* and then this code:
+If this doesn't work, another option is to add it manually from your Lovelace Dashboard: _Configure UI ➡ Add New Card ➡ Manual Card_ and then this code:
 
 ```yaml
 type: custom:pvpc-hourly-pricing-card

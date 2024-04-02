@@ -19,6 +19,7 @@ const locale = {
     show_graph: "Mostrar Gràfic",
     show_info: "Mostrar Informació",
     graph_baseline_zero: "Línia base zero (Gràfic)",
+    optionInjection: "Entitat preu injecció (Opcional)",
   },
   da: {
     minPrice: "Minimumspris i dag:",
@@ -33,6 +34,7 @@ const locale = {
     show_graph: "Vis graf",
     show_info: "Vis information",
     graph_baseline_zero: "Nul baseline (graf)",
+    optionInjection: "Injektionsprisenhed (valgfrit)",
   },
   de: {
     minPrice: "Minimalpreis heute:",
@@ -47,6 +49,7 @@ const locale = {
     show_graph: "Grafik anzeigen",
     show_info: "Informationen anzeigen",
     graph_baseline_zero: "Null-Basislinie (Grafik)",
+    optionInjection: "Injektionspreiseinheit (optional)",
   },
   en: {
     minPrice: "Lowest price today:",
@@ -61,6 +64,7 @@ const locale = {
     show_graph: "Show Graph",
     show_info: "Show Info",
     graph_baseline_zero: "Baseline zero (Graph)",
+    optionInjection: "Injection price entity (Optional)",
   },
   es: {
     minPrice: "Precio mínimo hoy:",
@@ -75,6 +79,7 @@ const locale = {
     show_graph: "Mostrar Gráfico",
     show_info: "Mostrar Información",
     graph_baseline_zero: "Línea base cero (Gráfico)",
+    entity_injection: "Entidad precio inyección (Opcional)",
   },
   fr: {
     minPrice: "Prix minimum aujourd'hui:",
@@ -89,6 +94,7 @@ const locale = {
     show_graph: "Afficher le graphique",
     show_info: "Afficher les informations",
     graph_baseline_zero: "Référence zéro (graphique)",
+    entity_injection: "Entité de prix d'injection (facultatif)",
   },
   nl: {
     minPrice: "Minimumspris i dag:",
@@ -103,6 +109,7 @@ const locale = {
     show_graph: "Show Graph",
     show_info: "Informatie weergeven",
     graph_baseline_zero: "Nul basislijn (Graph)",
+    entity_injection: "Injectieprijsentiteit (optioneel)",
   },
   pt: {
     minPrice: "Preço mínimo hoje:",
@@ -117,6 +124,7 @@ const locale = {
     show_graph: "Mostrar Gráfico",
     show_info: "Mostrar Informação",
     graph_baseline_zero: "Linha de base zero (Gráfico)",
+    entity_injection: "Entidade de preço de injeção (opcional)",
   },
   ru: {
     minPrice: "Минимальная цена сегодня:",
@@ -131,6 +139,7 @@ const locale = {
     show_graph: "Показать график",
     show_info: "Показать информацию",
     graph_baseline_zero: "Нулевая базовая линия (график)",
+    entity_injection: "Объект цены впрыска (необязательно)",
   },
   sk: {
     minPrice: "Najnižšia cena dnes:",
@@ -145,6 +154,7 @@ const locale = {
     show_graph: "Zobraziť graf",
     show_info: "Zobraziť informácie",
     graph_baseline_zero: "Východisková nula (graf)",
+    entity_injection: "Entidad precio inyección (Opcional)",
   },
   sv: {
     minPrice: "Lägsta pris idag:",
@@ -160,6 +170,7 @@ const locale = {
     show_graph: "Visa graf",
     show_info: "Visa information",
     graph_baseline_zero: "Noll baslinje (graf)",
+    entity_injection: "Subjekt ceny vstrekovania (voliteľné)",
   },
 };
 
@@ -250,6 +261,16 @@ class PVPCHourlyPricingCard extends LitElement {
     if (!this.pvpcHourlyPricingObj) return;
 
     this.despiction = this.getDespiction(this.pvpcHourlyPricingObj.attributes);
+
+    this.injectionHourlyPricingObj =
+      this._config.entity_injection in this.hass.states
+        ? this.hass.states[this._config.entity_injection]
+        : null;
+    if (!this.injectionHourlyPricingObj) return;
+
+    this.despictionInjection = this.getDespiction(
+      this.injectionHourlyPricingObj.attributes
+    );
   }
 
   shouldUpdate(changedProps) {
@@ -458,11 +479,15 @@ class PVPCHourlyPricingCard extends LitElement {
     const todayColor = "#377eb8";
     const tomorrowColor = "#ff7f00";
     const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
     const minIndex = this.despiction.minIndex;
     const maxIndex = this.despiction.maxIndex;
     const minIndexNextDay = this.despiction.minIndexNextDay;
     const maxIndexNextDay = this.despiction.maxIndexNextDay;
     const hasNextDayData = this.despiction.pricesNextDay[0] !== undefined;
+    const hasNextDayInjectionData =
+      this.despictionInjection.pricesNextDay[0] !== undefined;
     const minIcon = "▼";
     const maxIcon = "▲";
 
@@ -657,7 +682,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
     if (hasNextDayData) {
       chartOptions.data.datasets.push({
-        label: that.getDateString(today.setDate(today.getDate() + 1)),
+        label: that.getDateString(tomorrow),
         data: this.despiction.pricesNextDay,
         pointRadius: 0,
         borderColor: tomorrowColor,
@@ -666,6 +691,34 @@ class PVPCHourlyPricingCard extends LitElement {
         stepped: "before",
         spanGaps: true,
       });
+    }
+
+    if (this.despictionInjection) {
+      chartOptions.data.datasets.push({
+        label: that.getDateString(today),
+        data: this.despictionInjection.prices,
+        pointRadius: 0,
+        borderColor: todayColor,
+        backgroundColor: todayColor + "7F",
+        fill: false,
+        stepped: "before",
+        spanGaps: true,
+        borderDash: [4, 4],
+      });
+
+      if (hasNextDayInjectionData) {
+        chartOptions.data.datasets.push({
+          label: that.getDateString(tomorrow),
+          data: this.despictionInjection.pricesNextDay,
+          pointRadius: 0,
+          borderColor: tomorrowColor,
+          backgroundColor: tomorrowColor + "7F",
+          fill: false,
+          stepped: "before",
+          spanGaps: true,
+          borderDash: [4, 4],
+        });
+      }
     }
 
     if (this._config.graph_baseline_zero) {
@@ -858,6 +911,11 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
       {
         name: "entity",
         required: true,
+        selector: { entity: { domain: "sensor" } },
+      },
+      {
+        name: "entity_injection",
+        required: false,
         selector: { entity: { domain: "sensor" } },
       },
       {

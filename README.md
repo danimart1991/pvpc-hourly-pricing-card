@@ -31,7 +31,7 @@ You could use [HACS](https://hacs.xyz/) or follow this [guide](https://www.danie
 
 ```yaml
 resources:
-  url: /local/pvpc-hourly-pricing-card.js?v=1.9.0
+  url: /local/pvpc-hourly-pricing-card.js?v=1.13.0
   type: module
 ```
 
@@ -43,11 +43,12 @@ resources:
 | --- | --- | --- | --- | --- |
 | type | string | `null` | **Required** | `custom:pvpc-hourly-pricing-card` |
 | entity | string | `null` | **Required** | Spain electricity hourly pricing (PVPC) entity |
-| name | string | `null` | Optional | Title of the card |
-| current | boolean | `true` | Optional | Show the current price and pricing period |
-| details | boolean | `true` | Optional | Show the lowest and highest prices and hours for the current and next day |
-| graph | boolean | `true` | Optional | Show the graph with the prices for the current and next day |
-| info | boolean | `true` | Optional | Show info like '*Tomorrow's data is no yet available*' |
+| title | string | `null` | Optional | Title of the card |
+| show_current | boolean | `true` | Optional | Show the current price and pricing period |
+| show_details | boolean | `true` | Optional | Show the lowest and highest prices and hours for the current and next day |
+| show_graph | boolean | `true` | Optional | Show the graph with the prices for the current and next day |
+| show_info | boolean | `true` | Optional | Show info like '*Tomorrow's data is no yet available*' |
+| graph_baseline_zero | boolean | `false` | Optional | Show graph with desired minimum line base zero. |
 
 ## Example
 
@@ -61,8 +62,8 @@ If this doesn't work, another option is to add it manually from your Lovelace Da
 
 ```yaml
 type: custom:pvpc-hourly-pricing-card
-name: "PVPC 2.0 DT"
-entity: sensor.pvpc_2_0_dt
+title: "PVPC Prices"
+entity: sensor.pvpc
 ```
 
 ### Mode YAML
@@ -74,7 +75,7 @@ Add this lines of code to your Lovelace Dashboard YAML file:
 cards:
   ...
   - type: custom:pvpc-hourly-pricing-card
-    name: "PVPC 2.0 DT"
-    entity: sensor.pvpc_2_0_dt
+    title: "PVPC Prices"
+    entity: sensor.pvpc
   ...
 ```

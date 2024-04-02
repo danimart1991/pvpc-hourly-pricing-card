@@ -479,7 +479,6 @@ class PVPCHourlyPricingCard extends LitElement {
             backgroundColor: todayColor + "7F",
             fill: false,
             stepped: "before",
-            responsive: true,
             spanGaps: true,
           },
         ],
@@ -634,9 +633,9 @@ class PVPCHourlyPricingCard extends LitElement {
               },
             },
           },
-          filler: {
-            propagate: true,
-          },
+          // filler: {
+          //   propagate: true,
+          // },
           legend: {
             display: true,
             labels: {
@@ -646,7 +645,6 @@ class PVPCHourlyPricingCard extends LitElement {
         },
         elements: {
           line: {
-            tension: 0.1,
             borderWidth: 1.5,
           },
           point: {
@@ -666,7 +664,6 @@ class PVPCHourlyPricingCard extends LitElement {
         backgroundColor: tomorrowColor + "7F",
         fill: false,
         stepped: "before",
-        responsive: true,
         spanGaps: true,
       });
     }

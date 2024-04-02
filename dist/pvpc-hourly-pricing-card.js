@@ -479,6 +479,8 @@ class PVPCHourlyPricingCard extends LitElement {
             backgroundColor: todayColor + "7F",
             fill: false,
             stepped: "before",
+            responsive: true,
+            spanGaps: true,
           },
         ],
       },
@@ -664,6 +666,8 @@ class PVPCHourlyPricingCard extends LitElement {
         backgroundColor: tomorrowColor + "7F",
         fill: false,
         stepped: "before",
+        responsive: true,
+        spanGaps: true,
       });
     }
 
@@ -677,16 +681,6 @@ class PVPCHourlyPricingCard extends LitElement {
   getDespiction(attributes) {
     const today = new Date();
 
-    const priceRegex = /price_\d\dh/;
-    const priceNextDayRegex = /price_(next|last)_day_\d\dh/;
-
-    const priceArray = Object.keys(attributes)
-      .filter((key) => priceRegex.test(key))
-      .map((key) => attributes[key]);
-    const priceNextDayArray = Object.keys(attributes)
-      .filter((key) => priceNextDayRegex.test(key))
-      .map((key) => attributes[key]);
-
     let data = [];
     let dateTime = [];
     let prices = [];
@@ -694,24 +688,29 @@ class PVPCHourlyPricingCard extends LitElement {
 
     for (let index = 0; index < 24; index++) {
       dateTime.push(new Date(today.setHours(index, 0)));
-      prices.push(priceArray[index]);
-      pricesNextDay.push(priceNextDayArray[index]);
+      let index_fixed = String(index).padStart(2, "0");
+      prices.push(attributes["price_" + index_fixed + "h"]);
+      pricesNextDay.push(attributes["price_next_day_" + index_fixed + "h"]);
     }
 
     dateTime.push(new Date(today.setHours(24, 0)));
-    prices.push(priceArray[23]);
-    pricesNextDay.push(priceNextDayArray[23]);
+    prices.push(prices[23]);
+    pricesNextDay.push(pricesNextDay[23]);
+
+    let minPrice = Math.min.apply(null, prices.filter(Number));
+    let maxPrice = Math.max.apply(null, prices.filter(Number));
+    let minPriceNextDay = Math.min.apply(null, pricesNextDay.filter(Number));
+    let maxPriceNextDay = Math.max.apply(null, pricesNextDay.filter(Number));
 
     data.dateTime = dateTime;
     data.prices = prices;
     data.pricesNextDay = pricesNextDay;
-
-    data.minPrice = Math.min.apply(null, prices);
-    data.maxPrice = Math.max.apply(null, prices);
+    data.minPrice = isFinite(minPrice) ? minPrice : NaN;
+    data.maxPrice = isFinite(maxPrice) ? maxPrice : NaN;
     data.minIndex = prices.indexOf(data.minPrice);
     data.maxIndex = prices.indexOf(data.maxPrice);
-    data.minPriceNextDay = Math.min.apply(null, pricesNextDay);
-    data.maxPriceNextDay = Math.max.apply(null, pricesNextDay);
+    data.minPriceNextDay = isFinite(minPriceNextDay) ? minPriceNextDay : NaN;
+    data.maxPriceNextDay = isFinite(maxPriceNextDay) ? maxPriceNextDay : NaN;
     data.minIndexNextDay = pricesNextDay.indexOf(data.minPriceNextDay);
     data.maxIndexNextDay = pricesNextDay.indexOf(data.maxPriceNextDay);
 

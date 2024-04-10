@@ -63,6 +63,7 @@ const locale = {
     show_details: "Show Details",
     show_graph: "Show Graph",
     show_info: "Show Info",
+    show_only_today: "Show Only Current Day",
     graph_baseline_zero: "Baseline zero (Graph)",
     optionInjection: "Injection price entity (Optional)",
   },
@@ -78,6 +79,7 @@ const locale = {
     show_details: "Mostrar Detalles",
     show_graph: "Mostrar Gráfico",
     show_info: "Mostrar Información",
+    show_only_today: "Mostrar Solo Día Actual",
     graph_baseline_zero: "Línea base cero (Gráfico)",
     entity_injection: "Entidad precio inyección (Opcional)",
   },
@@ -458,7 +460,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
     this.numberElements++;
 
-    if (!this.despiction.minPriceNextDay) {
+    if (!this._config.show_only_today && !this.despiction.minPriceNextDay) {
       return html`
         <div class="info clear ${this.numberElements > 1 ? "spacer" : ""}">
           ${this._ll("infoNoNextDay")}
@@ -485,10 +487,12 @@ class PVPCHourlyPricingCard extends LitElement {
     const maxIndex = this.despiction.maxIndex;
     const minIndexNextDay = this.despiction.minIndexNextDay;
     const maxIndexNextDay = this.despiction.maxIndexNextDay;
-    const hasNextDayData = this.despiction.pricesNextDay[0] !== undefined && this.despiction.pricesNextDay[0] !== null;
+    const hasNextDayData =
+      this.despiction.pricesNextDay[0] !== undefined &&
+      this.despiction.pricesNextDay[0] !== null;
     const hasNextDayInjectionData =
       this.despictionInjection &&
-      this.despictionInjection.pricesNextDay[0] !== undefined && 
+      this.despictionInjection.pricesNextDay[0] !== undefined &&
       this.despictionInjection.pricesNextDay[0] !== null;
     const minIcon = "▼";
     const maxIcon = "▲";
@@ -561,7 +565,7 @@ class PVPCHourlyPricingCard extends LitElement {
               maxBar.y - iconYOffset
             );
 
-            if (hasNextDayData) {
+            if (!that._config.show_only_today && hasNextDayData) {
               const meta_next_day = chartInstance._metasets[1];
               const minNextDayBar = meta_next_day.data[minIndexNextDay];
               const maxNextDayBar = meta_next_day.data[maxIndexNextDay];
@@ -682,7 +686,7 @@ class PVPCHourlyPricingCard extends LitElement {
       },
     };
 
-    if (hasNextDayData) {
+    if (!that._config.show_only_today && hasNextDayData) {
       chartOptions.data.datasets.push({
         label: that.getDateString(tomorrow),
         data: this.despiction.pricesNextDay,
@@ -708,7 +712,7 @@ class PVPCHourlyPricingCard extends LitElement {
         borderDash: [4, 4],
       });
 
-      if (hasNextDayInjectionData) {
+      if (!that._config.show_only_today && hasNextDayInjectionData) {
         chartOptions.data.datasets.push({
           label: that.getDateString(tomorrow),
           data: this.despictionInjection.pricesNextDay,
@@ -723,7 +727,7 @@ class PVPCHourlyPricingCard extends LitElement {
       }
     }
 
-    if (this._config.graph_baseline_zero) {
+    if (that._config.graph_baseline_zero) {
       chartOptions.options.scales.y.suggestedMin = 0;
     }
 
@@ -936,6 +940,7 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
               { name: "show_details", selector: { boolean: {} } },
               { name: "show_graph", selector: { boolean: {} } },
               { name: "show_info", selector: { boolean: {} } },
+              { name: "show_only_today", selector: { boolean: {} } },
               { name: "graph_baseline_zero", selector: { boolean: {} } },
             ],
           },

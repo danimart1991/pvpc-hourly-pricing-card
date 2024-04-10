@@ -959,6 +959,7 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
       show_details: true,
       show_graph: true,
       show_info: true,
+      show_only_today: false,
       graph_baseline_zero: false,
       ...this._config,
     };

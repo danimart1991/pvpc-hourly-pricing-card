@@ -22,6 +22,7 @@ Based on [Lovelace Weather Card with Chart](https://github.com/sgttrs/lovelace-w
 - Actual price close-up.
 - Graph with the prices of the current day.
 - Graph with the prices of the next day when you are available.
+- Graph with the injection prices.
 - Lowest and Highest of the current and next day.
 - Icon indicating the current pricing period.
 
@@ -31,13 +32,11 @@ You could use [HACS](https://hacs.xyz/) or follow this [guide](https://www.danie
 
 ```yaml
 resources:
-  url: /local/pvpc-hourly-pricing-card.js?v=1.14.1
+  url: /local/pvpc-hourly-pricing-card.js?v=1.15.0
   type: module
 ```
 
 ## Options
-
-![Card Options](https://raw.githubusercontent.com/danimart1991/pvpc-hourly-pricing-card/master/docs/images/card-options.png)
 
 | Name                | Type    | Default | Requirement  | Description                                                               |
 | ------------------- | ------- | ------- | ------------ | ------------------------------------------------------------------------- |
@@ -49,6 +48,7 @@ resources:
 | show_details        | boolean | `true`  | Optional     | Show the lowest and highest prices and hours for the current and next day |
 | show_graph          | boolean | `true`  | Optional     | Show the graph with the prices for the current and next day               |
 | show_info           | boolean | `true`  | Optional     | Show info like '_Tomorrow's data is no yet available_'                    |
+| show_only_today     | boolean | `false` | Optional     | Show only today's data                                                    |
 | graph_baseline_zero | boolean | `false` | Optional     | Show graph with desired minimum line base zero.                           |
 
 ## Example

@@ -64,7 +64,7 @@ If this doesn't work, another option is to add it manually from your Lovelace Da
 ```yaml
 type: custom:pvpc-hourly-pricing-card
 title: "PVPC Prices"
-entity: sensor.pvpc
+entity: sensor.esios_pvpc
 ```
 
 ### Mode YAML
@@ -77,6 +77,6 @@ cards:
   ...
   - type: custom:pvpc-hourly-pricing-card
     title: "PVPC Prices"
-    entity: sensor.pvpc
+    entity: sensor.esios_pvpc
   ...
 ```

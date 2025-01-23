@@ -1,8 +1,6 @@
-const LitElement =
-  window.LitElement ||
-  Object.getPrototypeOf(
-    customElements.get("ha-panel-lovelace") || customElements.get("hc-lovelace")
-  );
+const LitElement = Object.getPrototypeOf(
+  customElements.get("ha-panel-lovelace")
+);
 const { html, css } = LitElement.prototype;
 
 const locale = {
@@ -200,34 +198,16 @@ const tariffPeriodIcons = {
   P1: "M 2.5238392,34.768609 A 25.003164,25.003164 0 0 1 1.9104804,32.879664 h 8.6436716 l 15.49805,-22.870055 15.121052,22.870055 h 8.891749 a 25.003164,25.003164 0 0 1 -0.628986,1.888945 H 40.038344 L 26.052202,13.679995 12.06606,34.768609 Z",
 };
 
-const fireEvent = (node, type, detail, options) => {
-  options = options || {};
-  detail = detail === null || detail === undefined ? {} : detail;
+const fireEvent = (node, type, detail = {}, options = {}) => {
   const event = new Event(type, {
-    bubbles: options.bubbles === undefined ? true : options.bubbles,
-    cancelable: Boolean(options.cancelable),
-    composed: options.composed === undefined ? true : options.composed,
+    bubbles: options.bubbles ?? true,
+    cancelable: options.cancelable ?? false,
+    composed: options.composed ?? true,
   });
   event.detail = detail;
   node.dispatchEvent(event);
   return event;
 };
-
-function hasConfigOrEntityChanged(element, changedProps) {
-  if (changedProps.has("_config")) {
-    return true;
-  }
-
-  const oldHass = changedProps.get("hass");
-  if (oldHass) {
-    return (
-      oldHass.states[element._config.entity] !==
-      element.hass.states[element._config.entity]
-    );
-  }
-
-  return true;
-}
 
 class PVPCHourlyPricingCard extends LitElement {
   static get properties() {
@@ -237,17 +217,113 @@ class PVPCHourlyPricingCard extends LitElement {
     };
   }
 
+  static get styles() {
+    return css`
+      ha-card {
+        height: 100%;
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      ha-icon {
+        color: var(--paper-item-icon-color);
+      }
+
+      .spacer {
+        padding-top: 1em;
+      }
+
+      .clear {
+        clear: both;
+      }
+
+      .tappable {
+        cursor: pointer;
+      }
+
+      .current {
+        height: 5.5em;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .period-icon {
+        padding-left: 16px;
+        padding-right: 16px;
+        width: 5.5em;
+        height: 5.5em;
+      }
+
+      .currentPrice {
+        font-weight: 300;
+        font-size: 4em;
+        color: var(--primary-text-color);
+        margin-top: 0.5em;
+        margin-right: 8px;
+      }
+
+      .currentPriceUnit {
+        font-weight: 300;
+        font-size: 1.5em;
+        vertical-align: super;
+        color: var(--primary-text-color);
+        right: 0em;
+        top: 0em;
+        position: absolute;
+        margin-right: 8px;
+      }
+
+      .details {
+        font-weight: 300;
+        color: var(--primary-text-color);
+        list-style: none;
+        padding-right: 1em;
+        padding-left: 1em;
+      }
+
+      .details li {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      .details ha-icon {
+        height: 22px;
+        margin-right: 4px;
+      }
+
+      .info {
+        color: var(--primary-text-color);
+        text-align: center;
+        padding-right: 1em;
+        padding-left: 1em;
+      }
+    `;
+  }
+
   static getConfigElement() {
     return document.createElement("pvpc-hourly-pricing-card-editor");
   }
 
-  static getStubConfig(hass, entities, entitiesFallback) {
+  static getStubConfig(hass) {
     const entity = Object.keys(hass.states).find((eid) =>
       Object.keys(hass.states[eid].attributes).some(
         (aid) => aid == "attribution"
       )
     );
     return { entity: entity };
+  }
+
+  getCardSize() {
+    return this.numberElements || 3;
   }
 
   setConfig(config) {
@@ -259,37 +335,27 @@ class PVPCHourlyPricingCard extends LitElement {
 
     this._config = config;
 
-    this.setPVPCHourlyPricingObj();
-  }
-
-  setPVPCHourlyPricingObj() {
-    if (!this.hass) return;
-
-    this.pvpcHourlyPricingObj =
-      this._config.entity in this.hass.states
-        ? this.hass.states[this._config.entity]
-        : null;
-    if (!this.pvpcHourlyPricingObj) return;
-
-    this.despiction = this.getDespiction(this.pvpcHourlyPricingObj.attributes);
-
-    this.injectionHourlyPricingObj =
-      this._config.entity_injection in this.hass.states
-        ? this.hass.states[this._config.entity_injection]
-        : null;
-    if (!this.injectionHourlyPricingObj) return;
-
-    this.despictionInjection = this.getDespiction(
-      this.injectionHourlyPricingObj.attributes
-    );
+    this._setPVPCHourlyPricingObj();
   }
 
   shouldUpdate(changedProps) {
-    return hasConfigOrEntityChanged(this, changedProps);
+    if (changedProps.has("_config")) {
+      return true;
+    }
+
+    const oldHass = changedProps.get("hass");
+    if (oldHass) {
+      return (
+        oldHass.states[this._config.entity] !==
+        this.hass.states[this._config.entity]
+      );
+    }
+
+    return true;
   }
 
   updated(param) {
-    this.setPVPCHourlyPricingObj();
+    this._setPVPCHourlyPricingObj();
     let chart = this.shadowRoot.getElementById("Chart");
     if (chart) {
       chart.hass = this.hass;
@@ -302,7 +368,7 @@ class PVPCHourlyPricingCard extends LitElement {
   render() {
     if (!this._config || !this.hass) return html``;
 
-    this.setPVPCHourlyPricingObj();
+    this._setPVPCHourlyPricingObj();
     this.numberElements = 0;
     this.lang = this.hass.selectedLanguage || this.hass.language;
 
@@ -332,16 +398,38 @@ class PVPCHourlyPricingCard extends LitElement {
           ${this._config.title}
         </h1>
         <div class="card-content">
-          ${this._config.show_current !== false ? this.renderCurrent() : ""}
-          ${this._config.show_details !== false ? this.renderDetails() : ""}
-          ${this._config.show_graph !== false ? this.renderGraph() : ""}
-          ${this._config.show_info !== false ? this.renderInfo() : ""}
+          ${this._config.show_current !== false ? this._renderCurrent() : ""}
+          ${this._config.show_details !== false ? this._renderDetails() : ""}
+          ${this._config.show_graph !== false ? this._renderGraph() : ""}
+          ${this._config.show_info !== false ? this._renderInfo() : ""}
         </div>
       </ha-card>
     `;
   }
 
-  renderCurrent() {
+  _setPVPCHourlyPricingObj() {
+    if (!this.hass) return;
+
+    this.pvpcHourlyPricingObj =
+      this._config.entity in this.hass.states
+        ? this.hass.states[this._config.entity]
+        : null;
+    if (!this.pvpcHourlyPricingObj) return;
+
+    this.despiction = this._getDespiction(this.pvpcHourlyPricingObj.attributes);
+
+    this.injectionHourlyPricingObj =
+      this._config.entity_injection in this.hass.states
+        ? this.hass.states[this._config.entity_injection]
+        : null;
+    if (!this.injectionHourlyPricingObj) return;
+
+    this.despictionInjection = this._getDespiction(
+      this.injectionHourlyPricingObj.attributes
+    );
+  }
+
+  _renderCurrent() {
     this.numberElements++;
     const tariffPeriod = this.pvpcHourlyPricingObj.attributes.period || "Error";
     const style = getComputedStyle(document.body);
@@ -360,7 +448,7 @@ class PVPCHourlyPricingCard extends LitElement {
         </svg>
 
         <span class="currentPrice"
-          >${this.getFixedFloat(this.pvpcHourlyPricingObj.state)}</span
+          >${this._getFixedFloat(this.pvpcHourlyPricingObj.state)}</span
         >
         <span class="currentPriceUnit">
           ${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}</span
@@ -369,37 +457,41 @@ class PVPCHourlyPricingCard extends LitElement {
     `;
   }
 
-  renderDetails() {
+  _renderDetails() {
     if (!this.despiction) {
       return html``;
     }
 
-    const minPrice = this.getFixedFloat(this.despiction.minPrice);
-    const minPriceFrom = this.getTimeString(
+    const minPrice = this._getFixedFloat(this.despiction.minPrice);
+    const minPriceFrom = this._getTimeString(
       new Date().setHours(this.despiction.minIndex, 0)
     );
-    const minPriceTo = this.getTimeString(
+    const minPriceTo = this._getTimeString(
       new Date().setHours(this.despiction.minIndex + 1, 0)
     );
-    const maxPrice = this.getFixedFloat(this.despiction.maxPrice);
-    const maxPriceFrom = this.getTimeString(
+    const maxPrice = this._getFixedFloat(this.despiction.maxPrice);
+    const maxPriceFrom = this._getTimeString(
       new Date().setHours(this.despiction.maxIndex, 0)
     );
-    const maxPriceTo = this.getTimeString(
+    const maxPriceTo = this._getTimeString(
       new Date().setHours(this.despiction.maxIndex + 1, 0)
     );
-    const minPriceNextDay = this.getFixedFloat(this.despiction.minPriceNextDay);
-    const minPriceFromNextDay = this.getTimeString(
+    const minPriceNextDay = this._getFixedFloat(
+      this.despiction.minPriceNextDay
+    );
+    const minPriceFromNextDay = this._getTimeString(
       new Date().setHours(this.despiction.minIndexNextDay, 0)
     );
-    const minPriceToNextDay = this.getTimeString(
+    const minPriceToNextDay = this._getTimeString(
       new Date().setHours(this.despiction.minIndexNextDay + 1, 0)
     );
-    const maxPriceNextDay = this.getFixedFloat(this.despiction.maxPriceNextDay);
-    const maxPriceFromNextDay = this.getTimeString(
+    const maxPriceNextDay = this._getFixedFloat(
+      this.despiction.maxPriceNextDay
+    );
+    const maxPriceFromNextDay = this._getTimeString(
       new Date().setHours(this.despiction.maxIndexNextDay, 0)
     );
-    const maxPriceToNextDay = this.getTimeString(
+    const maxPriceToNextDay = this._getTimeString(
       new Date().setHours(this.despiction.maxIndexNextDay + 1, 0)
     );
 
@@ -444,14 +536,14 @@ class PVPCHourlyPricingCard extends LitElement {
     `;
   }
 
-  renderGraph() {
+  _renderGraph() {
     if (!this.despiction) {
       return html``;
     }
 
     this.numberElements++;
 
-    this.drawChart();
+    this._drawChart();
 
     return html`
       <div class="clear ${this.numberElements > 1 ? "spacer" : ""}">
@@ -460,7 +552,7 @@ class PVPCHourlyPricingCard extends LitElement {
     `;
   }
 
-  renderInfo() {
+  _renderInfo() {
     if (!this.despiction) {
       return html``;
     }
@@ -478,7 +570,7 @@ class PVPCHourlyPricingCard extends LitElement {
     }
   }
 
-  drawChart() {
+  _drawChart() {
     if (!this.despiction) return;
 
     const that = this;
@@ -510,7 +602,7 @@ class PVPCHourlyPricingCard extends LitElement {
         labels: this.despiction.dateTime,
         datasets: [
           {
-            label: that.getDateString(today),
+            label: that._getDateString(today),
             data: this.despiction.prices,
             pointRadius: 0,
             borderColor: todayColor,
@@ -631,8 +723,8 @@ class PVPCHourlyPricingCard extends LitElement {
                     ? tooltipItems[0].dataIndex
                     : (tooltipItems[0].dataIndex = 23);
                 let date = new Date(new Date().setHours(index, 0));
-                let initDate = that.getTimeString(date);
-                let endDate = that.getTimeString(
+                let initDate = that._getTimeString(date);
+                let endDate = that._getTimeString(
                   date.setHours(date.getHours() + 1)
                 );
                 return initDate + " - " + endDate;
@@ -692,7 +784,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
     if (!that._config.show_only_today && hasNextDayData) {
       chartOptions.data.datasets.push({
-        label: that.getDateString(tomorrow),
+        label: that._getDateString(tomorrow),
         data: this.despiction.pricesNextDay,
         pointRadius: 0,
         borderColor: tomorrowColor,
@@ -705,7 +797,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
     if (this.despictionInjection) {
       chartOptions.data.datasets.push({
-        label: that.getDateString(today),
+        label: that._getDateString(today),
         data: this.despictionInjection.prices,
         pointRadius: 0,
         borderColor: todayColor,
@@ -718,7 +810,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
       if (!that._config.show_only_today && hasNextDayInjectionData) {
         chartOptions.data.datasets.push({
-          label: that.getDateString(tomorrow),
+          label: that._getDateString(tomorrow),
           data: this.despictionInjection.pricesNextDay,
           pointRadius: 0,
           borderColor: tomorrowColor,
@@ -738,7 +830,7 @@ class PVPCHourlyPricingCard extends LitElement {
     this.ChartData = chartOptions;
   }
 
-  getDespiction(attributes) {
+  _getDespiction(attributes) {
     const today = new Date();
 
     let data = [];
@@ -777,7 +869,7 @@ class PVPCHourlyPricingCard extends LitElement {
     return data;
   }
 
-  getDateString(datetime) {
+  _getDateString(datetime) {
     return new Date(datetime).toLocaleDateString(this.lang, {
       day: "2-digit",
       month: "2-digit",
@@ -785,7 +877,7 @@ class PVPCHourlyPricingCard extends LitElement {
     });
   }
 
-  getTimeString(datetime) {
+  _getTimeString(datetime) {
     return new Date(datetime).toLocaleTimeString(this.lang, {
       hour: "2-digit",
       minute: "2-digit",
@@ -793,7 +885,7 @@ class PVPCHourlyPricingCard extends LitElement {
     });
   }
 
-  getFixedFloat(number) {
+  _getFixedFloat(number) {
     return parseFloat(number).toFixed(5);
   }
 
@@ -801,105 +893,8 @@ class PVPCHourlyPricingCard extends LitElement {
     fireEvent(this, "hass-more-info", { entityId: this._config.entity });
   }
 
-  getCardSize() {
-    return this.numberElements || 3;
-  }
-
-  static get styles() {
-    return css`
-      ha-card {
-        height: 100%;
-      }
-
-      .card-header {
-        display: flex;
-        justify-content: space-between;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      ha-icon {
-        color: var(--paper-item-icon-color);
-      }
-
-      .spacer {
-        padding-top: 1em;
-      }
-
-      .clear {
-        clear: both;
-      }
-
-      .tappable {
-        cursor: pointer;
-      }
-
-      .current {
-        height: 5.5em;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .period-icon {
-        padding-left: 16px;
-        padding-right: 16px;
-        width: 5.5em;
-        height: 5.5em;
-      }
-
-      .currentPrice {
-        font-weight: 300;
-        font-size: 4em;
-        color: var(--primary-text-color);
-        margin-top: 0.5em;
-        margin-right: 8px;
-      }
-
-      .currentPriceUnit {
-        font-weight: 300;
-        font-size: 1.5em;
-        vertical-align: super;
-        color: var(--primary-text-color);
-        right: 0em;
-        top: 0em;
-        position: absolute;
-        margin-right: 8px;
-      }
-
-      .details {
-        font-weight: 300;
-        color: var(--primary-text-color);
-        list-style: none;
-        padding-right: 1em;
-        padding-left: 1em;
-      }
-
-      .details li {
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-      }
-
-      .details ha-icon {
-        height: 22px;
-        margin-right: 4px;
-      }
-
-      .info {
-        color: var(--primary-text-color);
-        text-align: center;
-        padding-right: 1em;
-        padding-left: 1em;
-      }
-    `;
-  }
-
   _ll(str) {
-    if (locale[this.lang] === undefined) return locale.en[str];
-    return locale[this.lang][str];
+    return locale[this.lang]?.[str] ?? locale.en[str];
   }
 }
 
@@ -976,10 +971,10 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
     ></ha-form>`;
   }
 
-  _valueChanged(ev) {
+  _valueChanged = (ev) => {
     const config = ev.detail.value;
     fireEvent(this, "config-changed", { config });
-  }
+  };
 
   _computeLabelCallback = (schema) => {
     if (this.hass) {
@@ -1003,8 +998,7 @@ export class PVPCHourlyPricingCardEditor extends LitElement {
   };
 
   _ll(str) {
-    if (locale[this.lang] === undefined) return locale.en[str];
-    return locale[this.lang][str];
+    return locale[this.lang]?.[str] ?? locale.en[str];
   }
 }
 

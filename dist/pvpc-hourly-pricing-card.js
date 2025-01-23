@@ -232,8 +232,8 @@ function hasConfigOrEntityChanged(element, changedProps) {
 class PVPCHourlyPricingCard extends LitElement {
   static get properties() {
     return {
-      _config: { type: Object },
-      hass: { type: Object },
+      _config: {},
+      hass: {},
     };
   }
 
@@ -300,9 +300,7 @@ class PVPCHourlyPricingCard extends LitElement {
   }
 
   render() {
-    if (!this._config || !this.hass) {
-      return nothing;
-    }
+    if (!this._config || !this.hass) return html``;
 
     this.setPVPCHourlyPricingObj();
     this.numberElements = 0;
@@ -908,14 +906,19 @@ class PVPCHourlyPricingCard extends LitElement {
 customElements.define("pvpc-hourly-pricing-card", PVPCHourlyPricingCard);
 
 export class PVPCHourlyPricingCardEditor extends LitElement {
+  static get properties() {
+    return {
+      hass: {},
+      _config: {},
+    };
+  }
+
   setConfig(config) {
     this._config = config;
   }
 
   render() {
-    if (!this.hass || !this._config) {
-      return nothing;
-    }
+    if (!this.hass || !this._config) return html``;
 
     this.lang = this.hass.selectedLanguage || this.hass.language;
 

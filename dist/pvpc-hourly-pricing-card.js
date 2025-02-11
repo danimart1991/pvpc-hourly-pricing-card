@@ -306,6 +306,16 @@ class PVPCHourlyPricingCard extends LitElement {
         padding-right: 1em;
         padding-left: 1em;
       }
+
+      .chart-container {
+        position: relative;
+        height: 300px;
+      }
+
+      .chart {
+        width: 100%;
+        height: 100%;
+      }
     `;
   }
 
@@ -354,14 +364,35 @@ class PVPCHourlyPricingCard extends LitElement {
     return true;
   }
 
-  updated(param) {
+  updated(_) {
     this._setPVPCHourlyPricingObj();
-    let chart = this.shadowRoot.getElementById("Chart");
-    if (chart) {
-      chart.hass = this.hass;
-      chart.type = this.ChartData.type;
-      chart.data = this.ChartData.data;
-      chart.options = this.ChartData.options;
+
+    if (this._config.show_graph !== false) {
+      if (!window.echarts) {
+        import("https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js").then(
+          () => {
+            this._chartOptions = this._createGraphOptions();
+
+            const chartContainer = this.shadowRoot.getElementById("Chart");
+            if (!chartContainer) return;
+
+            if (!this.chart) {
+              this.chart = echarts.init(chartContainer);
+            }
+            this.chart.setOption(this._chartOptions);
+          }
+        );
+      } else {
+        this._chartOptions = this._createGraphOptions();
+
+        const chartContainer = this.shadowRoot.getElementById("Chart");
+        if (!chartContainer) return;
+
+        if (!this.chart) {
+          this.chart = echarts.init(chartContainer);
+        }
+        this.chart.setOption(this._chartOptions);
+      }
     }
   }
 
@@ -424,7 +455,7 @@ class PVPCHourlyPricingCard extends LitElement {
         : null;
     if (!this.injectionHourlyPricingObj) return;
 
-    this.despictionInjection = this._getDespiction(
+    this._despictionInjection = this._getDespiction(
       this.injectionHourlyPricingObj.attributes
     );
   }
@@ -543,13 +574,27 @@ class PVPCHourlyPricingCard extends LitElement {
 
     this.numberElements++;
 
-    this._drawChart();
+    this._chartOptions = this._createGraphOptions();
 
     return html`
       <div class="clear ${this.numberElements > 1 ? "spacer" : ""}">
-        <ha-chart-base id="Chart"></ha-chart-base>
+        <div class="chart-container">
+          <div id="Chart" class="chart"></div>
+        </div>
       </div>
     `;
+
+    // <!-- <ha-chart-base
+    //       id="Chart"
+    //       .hass=${this.hass}
+    //       .data=${this._chartData}
+    //       .options=${this._chartOptions}
+    //       .height=${this.height}
+    //       style=${styleMap({ height: this.height })}
+    //       external-hidden
+    //       @dataset-hidden=${this._datasetHidden}
+    //       @dataset-unhidden=${this._datasetUnhidden}
+    //     ></ha-chart-base> -->
   }
 
   _renderInfo() {
@@ -570,264 +615,174 @@ class PVPCHourlyPricingCard extends LitElement {
     }
   }
 
-  _drawChart() {
+  _createGraphOptions() {
+    const data = this._getChartData();
+
     if (!this.despiction) return;
 
-    const that = this;
-
     const style = getComputedStyle(document.body);
-    const selectionColor = style.getPropertyValue("--secondary-text-color");
-    const todayColor = "#377eb8";
-    const tomorrowColor = "#ff7f00";
+    const textColor = style.getPropertyValue("--primary-text-color");
+    const splitLineColor = style.getPropertyValue("--divider-color");
+
+    const now = new Date(new Date().setMinutes(0));
     const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const minIndex = this.despiction.minIndex;
-    const maxIndex = this.despiction.maxIndex;
-    const minIndexNextDay = this.despiction.minIndexNextDay;
-    const maxIndexNextDay = this.despiction.maxIndexNextDay;
-    const hasNextDayData =
-      this.despiction.pricesNextDay[0] !== undefined &&
-      this.despiction.pricesNextDay[0] !== null;
-    const hasNextDayInjectionData =
-      this.despictionInjection &&
-      this.despictionInjection.pricesNextDay[0] !== undefined &&
-      this.despictionInjection.pricesNextDay[0] !== null;
-    const minIcon = "▼";
-    const maxIcon = "▲";
+    const tomorrow = new Date().setDate(today.getDate() + 1);
 
-    const chartOptions = {
+    const markPoint = {
+      symbol: "triangle",
+      symbolSize: 10,
+      label: { show: false },
+      data: [
+        { type: "max", name: "Max", symbolOffset: [0, -10] },
+        {
+          type: "min",
+          name: "Min",
+          symbolOffset: [0, 10],
+          symbolRotate: 180,
+        },
+      ],
+    };
+    const baseSeries = {
       type: "line",
-      data: {
-        labels: this.despiction.dateTime,
-        datasets: [
-          {
-            label: that._getDateString(today),
-            data: this.despiction.prices,
-            pointRadius: 0,
-            borderColor: todayColor,
-            backgroundColor: todayColor + "7F",
-            fill: false,
-            stepped: "before",
-            spanGaps: true,
-          },
-        ],
-      },
-      options: {
-        animation: {
-          duration: 0,
-          easing: "linear",
-          onComplete: function (context) {
-            const chartInstance = context.chart;
-            const ctx = chartInstance.ctx;
-            const meta = chartInstance._metasets[0];
-
-            ctx.save();
-            const selectedIndex =
-              chartInstance._active &&
-              chartInstance._active.length > 0 &&
-              chartInstance._active[0].index < 24
-                ? chartInstance._active[0].index
-                : today.getHours();
-            const yaxis = chartInstance.chartArea;
-            const xBarStart = meta.data[selectedIndex].x;
-            const xBarEnd = meta.data[selectedIndex + 1].x;
-            const yBarStart = yaxis.top;
-            const yBarEnd = yaxis.bottom;
-            ctx.globalAlpha = 0.3;
-            ctx.fillStyle = selectionColor;
-            ctx.fillRect(
-              xBarStart,
-              yBarStart,
-              xBarEnd - xBarStart,
-              yBarEnd - yBarStart
-            );
-            ctx.restore();
-
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-
-            const minBarStart = meta.data[minIndex];
-            const minBarEnd = meta.data[minIndex + 1];
-            const pointToPointCenterXOffset = (minBarEnd.x - minBarStart.x) / 2;
-            const maxBar = meta.data[maxIndex];
-            const iconYOffset = 8;
-            ctx.fillStyle = meta.dataset.options.borderColor;
-            ctx.fillText(
-              minIcon,
-              minBarStart.x + pointToPointCenterXOffset,
-              minBarStart.y - iconYOffset
-            );
-            ctx.fillText(
-              maxIcon,
-              maxBar.x + pointToPointCenterXOffset,
-              maxBar.y - iconYOffset
-            );
-
-            if (!that._config.show_only_today && hasNextDayData) {
-              const meta_next_day = chartInstance._metasets[1];
-              const minNextDayBar = meta_next_day.data[minIndexNextDay];
-              const maxNextDayBar = meta_next_day.data[maxIndexNextDay];
-              ctx.fillStyle = meta_next_day.dataset.options.borderColor;
-              ctx.fillText(
-                minIcon,
-                minNextDayBar.x + pointToPointCenterXOffset,
-                minNextDayBar.y - iconYOffset
-              );
-              ctx.fillText(
-                maxIcon,
-                maxNextDayBar.x + pointToPointCenterXOffset,
-                maxNextDayBar.y - iconYOffset
-              );
-            }
-          },
-        },
-        scales: {
-          x: {
-            type: "time",
-            adapters: {
-              date: {
-                locale: this.hass.locale,
-                config: this.hass.config,
-              },
-            },
-            ticks: {
-              maxRotation: 0,
-              sampleSize: 5,
-              autoSkipPadding: 20,
-            },
-            time: {
-              tooltipFormat: "hours",
-            },
-          },
-          y: {
-            ticks: {
-              maxTicksLimit: 7,
-            },
-            title: {
-              display: true,
-              text: that.pvpcHourlyPricingObj.attributes.unit_of_measurement,
-            },
-          },
-        },
-        interaction: {
-          intersect: false,
-          mode: "index",
-        },
-        plugins: {
-          tooltip: {
-            callbacks: {
-              title: function (tooltipItems, data) {
-                let index =
-                  tooltipItems[0].dataIndex != 24
-                    ? tooltipItems[0].dataIndex
-                    : (tooltipItems[0].dataIndex = 23);
-                let date = new Date(new Date().setHours(index, 0));
-                let initDate = that._getTimeString(date);
-                let endDate = that._getTimeString(
-                  date.setHours(date.getHours() + 1)
-                );
-                return initDate + " - " + endDate;
-              },
-              label: function (tooltipItem, data) {
-                let icon;
-                const index =
-                  tooltipItem.dataIndex != 24
-                    ? tooltipItem.dataIndex
-                    : (tooltipItem.dataIndex = 23);
-
-                if (tooltipItem.datasetIndex === 0) {
-                  if (index == minIndex) {
-                    icon = minIcon;
-                  } else if (index == maxIndex) {
-                    icon = maxIcon;
-                  }
-                } else if (tooltipItem.datasetIndex === 1) {
-                  if (index == minIndexNextDay) {
-                    icon = minIcon;
-                  } else if (index == maxIndexNextDay) {
-                    icon = maxIcon;
-                  }
-                }
-
-                const labelTitle = tooltipItem.dataset.label || "";
-                const label =
-                  labelTitle +
-                  ": " +
-                  parseFloat(tooltipItem.raw).toFixed(5) +
-                  " " +
-                  that.pvpcHourlyPricingObj.attributes.unit_of_measurement +
-                  " ";
-
-                return icon ? label + icon : label;
-              },
-            },
-          },
-          legend: {
-            display: true,
-            labels: {
-              usePointStyle: true,
-            },
-          },
-        },
-        elements: {
-          line: {
-            borderWidth: 1.5,
-          },
-          point: {
-            hitRadius: 0,
-            hoverRadius: 0,
-          },
-        },
-      },
+      showSymbol: false,
+      symbol: "circle",
+      step: "end",
+      markPoint: markPoint,
     };
 
-    if (!that._config.show_only_today && hasNextDayData) {
-      chartOptions.data.datasets.push({
-        label: that._getDateString(tomorrow),
-        data: this.despiction.pricesNextDay,
-        pointRadius: 0,
-        borderColor: tomorrowColor,
-        backgroundColor: tomorrowColor + "7F",
-        fill: false,
-        stepped: "before",
-        spanGaps: true,
-      });
+    const options = {
+      // TODO: get from https://github.com/home-assistant/frontend/blob/dev/src/common/color/colors.ts
+      color: ["#4269d0", "#f4bd4a"],
+      tooltip: {
+        trigger: "axis",
+        formatter: (params) => {
+          const hours = Math.min(Number(params[0].axisValue.split(":")[0]), 23);
+          let tooltipContent = `${this._getCategoryHour(
+            hours
+          )} - ${this._getCategoryHour(hours + 1)}<br/>`;
+          params.forEach((item) => {
+            tooltipContent += `${item.marker} ${item.seriesName}: ${item.value} ${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}<br/>`;
+          });
+          return tooltipContent;
+        },
+      },
+      textStyle: { color: textColor },
+      legend: {
+        selectedMode: false,
+        textStyle: { color: textColor },
+      },
+      xAxis: {
+        type: "category",
+        data: data.categories,
+        boundaryGap: false,
+        splitLine: { show: true, lineStyle: { color: splitLineColor } },
+      },
+      yAxis: {
+        type: "value",
+        name: this.pvpcHourlyPricingObj.attributes.unit_of_measurement,
+        splitLine: { show: true, lineStyle: { color: splitLineColor } },
+        min: (value) =>
+          this._config.graph_baseline_zero
+            ? 0
+            : Math.floor(value.min * 10) / 10 - 0.05,
+      },
+      series: [
+        Object.assign({}, baseSeries, {
+          name: this._getDateString(today),
+          data: data.prices,
+          markArea: {
+            itemStyle: { color: splitLineColor },
+            data: [
+              [
+                { xAxis: this._getCategoryHour(now.getHours()) },
+                { xAxis: this._getCategoryHour(now.getHours() + 1) },
+              ],
+            ],
+          },
+        }),
+      ],
+    };
+
+    if (
+      !this._config.show_only_today &&
+      data.pricesTomorrow.some((value) => value !== 0)
+    ) {
+      options.series.push(
+        Object.assign({}, baseSeries, {
+          name: this._getDateString(tomorrow),
+          data: data.pricesTomorrow,
+        })
+      );
     }
 
-    if (this.despictionInjection) {
-      chartOptions.data.datasets.push({
-        label: that._getDateString(today),
-        data: this.despictionInjection.prices,
-        pointRadius: 0,
-        borderColor: todayColor,
-        backgroundColor: todayColor + "7F",
-        fill: false,
-        stepped: "before",
-        spanGaps: true,
-        borderDash: [4, 4],
-      });
-
-      if (!that._config.show_only_today && hasNextDayInjectionData) {
-        chartOptions.data.datasets.push({
-          label: that._getDateString(tomorrow),
-          data: this.despictionInjection.pricesNextDay,
-          pointRadius: 0,
-          borderColor: tomorrowColor,
-          backgroundColor: tomorrowColor + "7F",
-          fill: false,
-          stepped: "before",
-          spanGaps: true,
-          borderDash: [4, 4],
-        });
-      }
+    if (data.injectionPrices.some((value) => value !== 0)) {
+      options.series.push(
+        Object.assign({}, baseSeries, {
+          name: this._getDateString(today),
+          data: data.injectionPrices,
+          lineStyle: { type: "dotted" },
+        })
+      );
     }
 
-    if (that._config.graph_baseline_zero) {
-      chartOptions.options.scales.y.suggestedMin = 0;
+    if (
+      !this._config.show_only_today &&
+      data.injectionPricesTomorrow.some((value) => value !== 0)
+    ) {
+      options.series.push(
+        Object.assign({}, baseSeries, {
+          name: this._getDateString(tomorrow),
+          data: data.injectionPricesTomorrow,
+          lineStyle: { type: "dotted" },
+        })
+      );
     }
 
-    this.ChartData = chartOptions;
+    return options;
+  }
+
+  _getChartData() {
+    const entity = this.hass.states[this._config.entity];
+    if (!entity) return { categories: [], values: [] };
+    const injectionEntity = this.hass.states[this._config.entity_injection];
+
+    const attributes = entity.attributes;
+    const injectionAttributes = injectionEntity
+      ? injectionEntity.attributes
+      : {};
+    const categories = [];
+    const prices = [];
+    const pricesTomorrow = [];
+    const injectionPrices = [];
+    const injectionPricesTomorrow = [];
+
+    for (let i = 0; i < 24; i++) {
+      categories.push(this._getCategoryHour(i));
+      prices.push(attributes[`price_${this._getPadStartNumber(i)}h`] || 0);
+      pricesTomorrow.push(
+        attributes[`price_next_day_${this._getPadStartNumber(i)}h`] || 0
+      );
+      injectionPrices.push(
+        injectionAttributes[`price_${this._getPadStartNumber(i)}h`] || 0
+      );
+      injectionPricesTomorrow.push(
+        injectionAttributes[`price_next_day_${this._getPadStartNumber(i)}h`] ||
+          0
+      );
+    }
+
+    categories.push(this._getCategoryHour(24));
+    prices.push(prices[23]);
+    pricesTomorrow.push(pricesTomorrow[23]);
+    injectionPrices.push(injectionPrices[23]);
+
+    return {
+      categories,
+      prices,
+      pricesTomorrow,
+      injectionPrices,
+      injectionPricesTomorrow,
+    };
   }
 
   _getDespiction(attributes) {
@@ -840,7 +795,7 @@ class PVPCHourlyPricingCard extends LitElement {
 
     for (let index = 0; index < 24; index++) {
       dateTime.push(new Date(today.setHours(index, 0)));
-      let index_fixed = String(index).padStart(2, "0");
+      let index_fixed = this._getPadStartNumber(index);
       prices.push(attributes["price_" + index_fixed + "h"]);
       pricesNextDay.push(attributes["price_next_day_" + index_fixed + "h"]);
     }
@@ -887,6 +842,15 @@ class PVPCHourlyPricingCard extends LitElement {
 
   _getFixedFloat(number) {
     return parseFloat(number).toFixed(5);
+  }
+
+  _getCategoryHour(hours) {
+    const padHours = this._getPadStartNumber(hours);
+    return `${padHours}:00`;
+  }
+
+  _getPadStartNumber(number) {
+    return String(number).padStart(2, "0");
   }
 
   _handleClick() {

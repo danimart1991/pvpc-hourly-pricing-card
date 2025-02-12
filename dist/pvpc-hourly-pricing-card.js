@@ -667,10 +667,7 @@ class PVPCHourlyPricingCard extends LitElement {
         },
       },
       textStyle: { color: textColor },
-      legend: {
-        selectedMode: false,
-        textStyle: { color: textColor },
-      },
+      legend: { textStyle: { color: textColor } },
       xAxis: {
         type: "category",
         data: data.categories,

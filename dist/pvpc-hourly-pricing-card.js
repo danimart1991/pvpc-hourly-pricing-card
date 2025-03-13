@@ -209,6 +209,96 @@ const fireEvent = (node, type, detail = {}, options = {}) => {
   return event;
 };
 
+class ChartBase extends LitElement {
+  static get properties() {
+    return {
+      data: { type: Array },
+      options: { type: Object },
+    };
+  }
+
+  render() {
+    return html`
+      <div class="container">
+        <div class="chart-container">
+          <div class="chart" style="width:100%; height:100%;"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  firstUpdated() {
+    this._setupChart();
+  }
+
+  async _setupChart() {
+    if (!window.echarts) {
+      await import("https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js");
+    }
+
+    const container = this.shadowRoot.querySelector(".chart");
+    this.chart = echarts.init(container);
+
+    if (this.options) {
+      this.chart.setOption(this.options, true);
+    }
+
+    this._resizeObserver = new ResizeObserver(() => {
+      requestAnimationFrame(() => this.chart?.resize());
+    });
+    this._resizeObserver.observe(container);
+  }
+
+  updated(changedProps) {
+    if (
+      this.chart &&
+      (changedProps.has("data") || changedProps.has("options"))
+    ) {
+      this.chart.setOption(this.options, true);
+    }
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    if (this.hasUpdated) {
+      this._setupChart();
+    }
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._resizeObserver?.disconnect();
+    this.chart?.dispose();
+    this.chart = undefined;
+  }
+
+  static styles = css`
+    :host {
+      display: block;
+      position: relative;
+      letter-spacing: normal;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      max-height: var(--chart-max-height, 350px);
+      height: 300px;
+    }
+    .chart-container {
+      width: 100%;
+      max-height: var(--chart-max-height, 350px);
+      height: 300px;
+    }
+    .chart {
+      height: 100%;
+      width: 100%;
+    }
+  `;
+}
+
+customElements.define("chart-base", ChartBase);
+
 class PVPCHourlyPricingCard extends LitElement {
   static get properties() {
     return {
@@ -306,16 +396,6 @@ class PVPCHourlyPricingCard extends LitElement {
         padding-right: 1em;
         padding-left: 1em;
       }
-
-      .chart-container {
-        position: relative;
-        height: 300px;
-      }
-
-      .chart {
-        width: 100%;
-        height: 100%;
-      }
     `;
   }
 
@@ -349,50 +429,23 @@ class PVPCHourlyPricingCard extends LitElement {
   }
 
   shouldUpdate(changedProps) {
+    if (!this._config) return false;
+
     if (changedProps.has("_config")) {
       return true;
     }
 
-    const oldHass = changedProps.get("hass");
-    if (oldHass) {
-      return (
-        oldHass.states[this._config.entity] !==
-        this.hass.states[this._config.entity]
-      );
-    }
-
-    return true;
-  }
-
-  updated(_) {
-    this._setPVPCHourlyPricingObj();
-
-    if (this._config.show_graph !== false) {
-      if (!window.echarts) {
-        import("https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js").then(
-          () => {
-            this._chartOptions = this._createGraphOptions();
-
-            const chartContainer = this.shadowRoot.getElementById("Chart");
-            if (!chartContainer) return;
-
-            if (!this.chart) {
-              this.chart = echarts.init(chartContainer);
-            }
-            this.chart.setOption(this._chartOptions);
-          }
+    if (this._config.entity) {
+      const oldHass = changedProps.get("hass");
+      if (oldHass) {
+        return (
+          oldHass.states[this._config.entity] !==
+          this.hass.states[this._config.entity]
         );
-      } else {
-        this._chartOptions = this._createGraphOptions();
-
-        const chartContainer = this.shadowRoot.getElementById("Chart");
-        if (!chartContainer) return;
-
-        if (!this.chart) {
-          this.chart = echarts.init(chartContainer);
-        }
-        this.chart.setOption(this._chartOptions);
       }
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -578,9 +631,10 @@ class PVPCHourlyPricingCard extends LitElement {
 
     return html`
       <div class="clear ${this.numberElements > 1 ? "spacer" : ""}">
-        <div class="chart-container">
-          <div id="Chart" class="chart"></div>
-        </div>
+        <chart-base
+          .data=${this._chartOptions.series}
+          .options=${this._chartOptions}
+        ></chart-base>
       </div>
     `;
 
@@ -622,6 +676,8 @@ class PVPCHourlyPricingCard extends LitElement {
 
     const style = getComputedStyle(document.body);
     const textColor = style.getPropertyValue("--primary-text-color");
+    const secondaryTextColor = style.getPropertyValue("--secondary-text-color");
+    const disabledTextColor = style.getPropertyValue("--disabled-text-color");
     const splitLineColor = style.getPropertyValue("--divider-color");
 
     const now = new Date(new Date().setMinutes(0));
@@ -648,13 +704,42 @@ class PVPCHourlyPricingCard extends LitElement {
       symbol: "circle",
       step: "end",
       markPoint: markPoint,
+      cursor: "default",
+      smooth: 0.4,
+      smoothMonotone: "x",
+      lineStyle: { width: 1.5 },
     };
 
     const options = {
       // TODO: get from https://github.com/home-assistant/frontend/blob/dev/src/common/color/colors.ts
       color: ["#4269d0", "#f4bd4a"],
+      backgroundColor: "transparent",
+      textStyle: {
+        color: textColor,
+        fontFamily: "Roboto, Noto, sans-serif",
+      },
+      title: {
+        textStyle: { color: textColor },
+        subtextStyle: { color: secondaryTextColor },
+      },
+      legend: {
+        textStyle: { color: textColor },
+        inactiveColor: disabledTextColor,
+        pageIconColor: textColor,
+        pageIconInactiveColor: disabledTextColor,
+        pageTextStyle: {
+          color: secondaryTextColor,
+        },
+      },
       tooltip: {
         trigger: "axis",
+        backgroundColor: style.getPropertyValue("--card-background-color"),
+        borderColor: splitLineColor,
+        textStyle: { color: textColor, fontSize: 12 },
+        axisPointer: {
+          lineStyle: { color: style.getPropertyValue("--info-color") },
+          crossStyle: { color: style.getPropertyValue("--info-color") },
+        },
         formatter: (params) => {
           const hours = Math.min(Number(params[0].axisValue.split(":")[0]), 23);
           let tooltipContent = `${this._getCategoryHour(
@@ -666,22 +751,28 @@ class PVPCHourlyPricingCard extends LitElement {
           return tooltipContent;
         },
       },
-      textStyle: { color: textColor },
-      legend: { textStyle: { color: textColor } },
       xAxis: {
         type: "category",
         data: data.categories,
         boundaryGap: false,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { show: true, color: textColor },
         splitLine: { show: true, lineStyle: { color: splitLineColor } },
+        splitArea: { show: false },
       },
       yAxis: {
         type: "value",
         name: this.pvpcHourlyPricingObj.attributes.unit_of_measurement,
-        splitLine: { show: true, lineStyle: { color: splitLineColor } },
         min: (value) =>
           this._config.graph_baseline_zero
             ? 0
             : Math.floor(value.min * 10) / 10 - 0.05,
+        axisLine: { show: true, lineStyle: { color: splitLineColor } },
+        axisTick: { show: true, lineStyle: { color: splitLineColor } },
+        axisLabel: { show: true, color: textColor },
+        splitLine: { show: true, lineStyle: { color: splitLineColor } },
+        splitArea: { show: false },
       },
       series: [
         Object.assign({}, baseSeries, {
@@ -772,6 +863,7 @@ class PVPCHourlyPricingCard extends LitElement {
     prices.push(prices[23]);
     pricesTomorrow.push(pricesTomorrow[23]);
     injectionPrices.push(injectionPrices[23]);
+    injectionPricesTomorrow.push(injectionPricesTomorrow[23]);
 
     return {
       categories,

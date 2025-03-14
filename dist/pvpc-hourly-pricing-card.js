@@ -532,7 +532,7 @@ class PVPCHourlyPricingCard extends LitElement {
         </svg>
 
         <span class="currentPrice"
-          >${this._getFixedFloat(this.pvpcHourlyPricingObj.state)}</span
+          >${this._formatNumber(this.pvpcHourlyPricingObj.state)}</span
         >
         <span class="currentPriceUnit">
           ${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}</span
@@ -546,37 +546,25 @@ class PVPCHourlyPricingCard extends LitElement {
       return html``;
     }
 
-    const minPrice = this._getFixedFloat(this.despiction.minPrice);
-    const minPriceFrom = this._getTimeString(
-      new Date().setHours(this.despiction.minIndex, 0)
+    const minPrice = this._formatNumber(this.despiction.minPrice);
+    const minPriceFrom = this._formatHour(this.despiction.minIndex);
+    const minPriceTo = this._formatHour(this.despiction.minIndex + 1);
+    const maxPrice = this._formatNumber(this.despiction.maxPrice);
+    const maxPriceFrom = this._formatHour(this.despiction.maxIndex);
+    const maxPriceTo = this._formatHour(this.despiction.maxIndex + 1);
+    const minPriceNextDay = this._formatNumber(this.despiction.minPriceNextDay);
+    const minPriceFromNextDay = this._formatHour(
+      this.despiction.minIndexNextDay
     );
-    const minPriceTo = this._getTimeString(
-      new Date().setHours(this.despiction.minIndex + 1, 0)
+    const minPriceToNextDay = this._formatHour(
+      this.despiction.minIndexNextDay + 1
     );
-    const maxPrice = this._getFixedFloat(this.despiction.maxPrice);
-    const maxPriceFrom = this._getTimeString(
-      new Date().setHours(this.despiction.maxIndex, 0)
+    const maxPriceNextDay = this._formatNumber(this.despiction.maxPriceNextDay);
+    const maxPriceFromNextDay = this._formatHour(
+      this.despiction.maxIndexNextDay
     );
-    const maxPriceTo = this._getTimeString(
-      new Date().setHours(this.despiction.maxIndex + 1, 0)
-    );
-    const minPriceNextDay = this._getFixedFloat(
-      this.despiction.minPriceNextDay
-    );
-    const minPriceFromNextDay = this._getTimeString(
-      new Date().setHours(this.despiction.minIndexNextDay, 0)
-    );
-    const minPriceToNextDay = this._getTimeString(
-      new Date().setHours(this.despiction.minIndexNextDay + 1, 0)
-    );
-    const maxPriceNextDay = this._getFixedFloat(
-      this.despiction.maxPriceNextDay
-    );
-    const maxPriceFromNextDay = this._getTimeString(
-      new Date().setHours(this.despiction.maxIndexNextDay, 0)
-    );
-    const maxPriceToNextDay = this._getTimeString(
-      new Date().setHours(this.despiction.maxIndexNextDay + 1, 0)
+    const maxPriceToNextDay = this._formatHour(
+      this.despiction.maxIndexNextDay + 1
     );
 
     this.numberElements++;
@@ -588,30 +576,28 @@ class PVPCHourlyPricingCard extends LitElement {
       >
         <li>
           <ha-icon icon="mdi:thumb-up-outline"></ha-icon>
-          ${this._ll("minPrice")}
-          ${minPrice}${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}
+          ${this._ll("minPrice")} ${minPrice}
+          ${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}
           ${this._ll("from")} ${minPriceFrom} ${this._ll("to")} ${minPriceTo}
         </li>
         <li>
           <ha-icon icon="mdi:thumb-down-outline"></ha-icon>
-          ${this._ll("maxPrice")}
-          ${maxPrice}${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}
+          ${this._ll("maxPrice")} ${maxPrice}
+          ${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}
           ${this._ll("from")} ${maxPriceFrom} ${this._ll("to")} ${maxPriceTo}
         </li>
         ${this.despiction.minPriceNextDay
           ? html` <li>
                 <ha-icon icon="mdi:thumb-up-outline"></ha-icon>
-                ${this._ll("minPriceNextDay")}
-                ${minPriceNextDay}${this.pvpcHourlyPricingObj.attributes
-                  .unit_of_measurement}
+                ${this._ll("minPriceNextDay")} ${minPriceNextDay}
+                ${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}
                 ${this._ll("from")} ${minPriceFromNextDay} ${this._ll("to")}
                 ${minPriceToNextDay}
               </li>
               <li>
                 <ha-icon icon="mdi:thumb-down-outline"></ha-icon>
-                ${this._ll("maxPriceNextDay")}
-                ${maxPriceNextDay}${this.pvpcHourlyPricingObj.attributes
-                  .unit_of_measurement}
+                ${this._ll("maxPriceNextDay")} ${maxPriceNextDay}
+                ${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}
                 ${this._ll("from")} ${maxPriceFromNextDay} ${this._ll("to")}
                 ${maxPriceToNextDay}
               </li>`
@@ -742,9 +728,9 @@ class PVPCHourlyPricingCard extends LitElement {
         },
         formatter: (params) => {
           const hours = Math.min(Number(params[0].axisValue.split(":")[0]), 23);
-          let tooltipContent = `${this._getCategoryHour(
-            hours
-          )} - ${this._getCategoryHour(hours + 1)}<br/>`;
+          let tooltipContent = `${this._formatHour(hours)} - ${this._formatHour(
+            hours + 1
+          )}<br/>`;
           params.forEach((item) => {
             tooltipContent += `${item.marker} ${item.seriesName}: ${item.value} ${this.pvpcHourlyPricingObj.attributes.unit_of_measurement}<br/>`;
           });
@@ -776,14 +762,14 @@ class PVPCHourlyPricingCard extends LitElement {
       },
       series: [
         Object.assign({}, baseSeries, {
-          name: this._getDateString(today),
+          name: this._formatDate(today),
           data: data.prices,
           markArea: {
             itemStyle: { color: splitLineColor },
             data: [
               [
-                { xAxis: this._getCategoryHour(now.getHours()) },
-                { xAxis: this._getCategoryHour(now.getHours() + 1) },
+                { xAxis: this._formatHour(now.getHours()) },
+                { xAxis: this._formatHour(now.getHours() + 1) },
               ],
             ],
           },
@@ -797,7 +783,7 @@ class PVPCHourlyPricingCard extends LitElement {
     ) {
       options.series.push(
         Object.assign({}, baseSeries, {
-          name: this._getDateString(tomorrow),
+          name: this._formatDate(tomorrow),
           data: data.pricesTomorrow,
         })
       );
@@ -806,7 +792,7 @@ class PVPCHourlyPricingCard extends LitElement {
     if (data.injectionPrices.some((value) => value !== 0)) {
       options.series.push(
         Object.assign({}, baseSeries, {
-          name: this._getDateString(today),
+          name: this._formatDate(today),
           data: data.injectionPrices,
           lineStyle: { type: "dotted" },
         })
@@ -819,7 +805,7 @@ class PVPCHourlyPricingCard extends LitElement {
     ) {
       options.series.push(
         Object.assign({}, baseSeries, {
-          name: this._getDateString(tomorrow),
+          name: this._formatDate(tomorrow),
           data: data.injectionPricesTomorrow,
           lineStyle: { type: "dotted" },
         })
@@ -845,7 +831,7 @@ class PVPCHourlyPricingCard extends LitElement {
     const injectionPricesTomorrow = [];
 
     for (let i = 0; i < 24; i++) {
-      categories.push(this._getCategoryHour(i));
+      categories.push(this._formatHour(i));
       prices.push(attributes[`price_${this._getPadStartNumber(i)}h`] || 0);
       pricesTomorrow.push(
         attributes[`price_next_day_${this._getPadStartNumber(i)}h`] || 0
@@ -859,7 +845,7 @@ class PVPCHourlyPricingCard extends LitElement {
       );
     }
 
-    categories.push(this._getCategoryHour(24));
+    categories.push(this._formatHour(24));
     prices.push(prices[23]);
     pricesTomorrow.push(pricesTomorrow[23]);
     injectionPrices.push(injectionPrices[23]);
@@ -913,28 +899,39 @@ class PVPCHourlyPricingCard extends LitElement {
     return data;
   }
 
-  _getDateString(datetime) {
-    return new Date(datetime).toLocaleDateString(this.lang, {
-      day: "2-digit",
-      month: "2-digit",
+  _formatDate(value, language) {
+    if (!language) {
+      if (this.hass?.locale?.date_format === "language") {
+        language = this.hass.locale.language;
+      } else {
+        language = undefined;
+      }
+    }
+
+    return new Intl.DateTimeFormat(language, {
       year: "numeric",
-    });
+      month: "numeric",
+      day: "numeric",
+    }).format(value);
   }
 
-  _getTimeString(datetime) {
-    return new Date(datetime).toLocaleTimeString(this.lang, {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+  _formatNumber(value, language) {
+    if (!language) {
+      if (this.hass?.locale?.number_format === "language") {
+        language = this.hass.locale.language;
+      } else {
+        language = undefined;
+      }
+    }
+
+    return new Intl.NumberFormat(language, {
+      maximumFractionDigits: 5,
+      minimumFractionDigits: 5,
+    }).format(value);
   }
 
-  _getFixedFloat(number) {
-    return parseFloat(number).toFixed(5);
-  }
-
-  _getCategoryHour(hours) {
-    const padHours = this._getPadStartNumber(hours);
+  _formatHour(index) {
+    const padHours = this._getPadStartNumber(index);
     return `${padHours}:00`;
   }
 
